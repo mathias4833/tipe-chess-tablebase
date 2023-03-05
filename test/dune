@@ -1,0 +1,2 @@
+(test
+ (name chess_engine))
