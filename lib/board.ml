@@ -1,3 +1,5 @@
+open Int64;;
+
 type chessboard = {
     w_pawns: int64;
     w_knights: int64;
@@ -12,7 +14,6 @@ type chessboard = {
     b_queen: int64;
     b_king: int64
 };;
-
 
 (* Position initiale *)
 let init_board = {
@@ -29,3 +30,15 @@ let init_board = {
     b_queen = 0x800000000000000L;
     b_king = 0x1000000000000000L;
 };;
+
+(* Print the bitboard *)
+(* TODO: Commenter + fix echiquier inverse *)
+let print_bitboard x =
+  let rec aux i n =
+    match (i, n) with
+    |i, _ when i > (64 + 8) -> ""
+    |i, _ when i mod 9 = 0 -> (aux (i+1) n) ^ "\n"
+    |_, n when (logand n 1L) = 1L -> (aux (i+1) (shift_right n 1)) ^ "1"
+    |_ -> (aux (i+1) (shift_right n 1)) ^ "."
+  in print_string (aux 0 x)
+;;

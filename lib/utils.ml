@@ -19,9 +19,9 @@ let rec get_lsb x =
 ;;
 
 (* Renvoie le bitboard en echangeant la valeur du lsb *)
+(* LS-Bit-Reset *)
 let pop_lsb x =
-    let n = get_lsb x in
-    shift_left (shift_right x (n+1)) (n+1)
+   logand x (sub x 1L)
 ;;
 
 (* Compte le nombre de 1 *)
@@ -30,4 +30,10 @@ let rec count_ones x =
     |0L -> 0
     |x when (logand x 1L) = 1L -> 1 + count_ones (shift_right x 1)
     |_ -> count_ones (shift_right x 1)
+;;
+
+(* Isole le lsb *)
+(* Voir: LS-Bit-Isolation *)
+let isolate_lsb x =
+  logand x (neg x)
 ;;
