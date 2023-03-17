@@ -15,6 +15,19 @@ type chessboard = {
     b_king: int64
 };;
 
+(* Layout *)
+let x = [|
+  56;57;58;59;60;61;62;63;
+  48;49;50;51;52;53;54;55;
+  40;41;42;43;44;45;46;47;
+  32;33;34;35;36;37;38;39;
+  24;25;26;27;28;29;30;31;
+  16;17;18;19;20;21;22;23;
+  08;09;10;11;12;13;14;15;
+  00;01;02;03;04;05;06;07;
+|];;
+
+
 (* Position initiale *)
 let init_board = {
     w_pawns = 0xff00L;
@@ -32,13 +45,16 @@ let init_board = {
 };;
 
 (* Print the bitboard *)
-(* TODO: Commenter + fix echiquier inverse *)
+(* TODO: Commenter *)
 let print_bitboard x =
-  let rec aux i n =
+  let rec line i n =
+    match i, n with
+    |(i, _) when i < 0 -> "\n"
+    |(_, n) when (logand n 1L) = 1L -> "1" ^ (line (i-1) (shift_right n 1))
+    |_ -> "." ^ (line (i-1) (shift_right n 1))
+  and column i n =
     match (i, n) with
-    |i, _ when i > (64 + 8) -> ""
-    |i, _ when i mod 9 = 0 -> (aux (i+1) n) ^ "\n"
-    |_, n when (logand n 1L) = 1L -> (aux (i+1) (shift_right n 1)) ^ "1"
-    |_ -> (aux (i+1) (shift_right n 1)) ^ "."
-  in print_string (aux 0 x)
+    |(i, _) when i < 0 -> ""
+    |_ -> (column (i-1) (shift_right n 8)) ^ (line 7 n)
+  in print_string (column 7 x)
 ;;
