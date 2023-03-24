@@ -33,6 +33,7 @@ let bitscan_forward x =
   let magic = 0x03f79d71b4cb0a89L in
   let n = mul (logand x (neg x)) magic in
   print_int (to_int n);
+  print_endline ("\n" ^ to_string (mul x magic));
   bruijn_sequence.(to_int (shift_right n 58))
 ;;
 
