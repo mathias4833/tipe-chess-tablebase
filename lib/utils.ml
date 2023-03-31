@@ -37,6 +37,7 @@ let bitscan_forward x =
   bruijn_sequence.(to_int (shift_right n 58))
 ;;
 
+
 (* Isole le lsb *)
 (* Voir: LS-Bit-Isolation *)
 let isolate_lsb x =
@@ -47,6 +48,21 @@ let isolate_lsb x =
 (* precondition: x est non nul *)
 let get_lsb x =
     bitscan_forward (isolate_lsb x)
+;;
+
+(* lent mais fonctionne *)
+let bitscan_forward2 x =
+  let rec get_lsb_aux x acc =
+    match x with
+    |1L -> acc
+    |_ -> get_lsb_aux (shift_right x 1) (acc+1)
+  in match x with
+  |0L -> 0
+  |_ -> get_lsb_aux x 1
+;;
+
+let get_lsb2 x =
+  bitscan_forward2 (isolate_lsb x)
 ;;
 
 (* Compte le nombre de 1 *)

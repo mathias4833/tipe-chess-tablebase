@@ -14,7 +14,7 @@ let point_value index chessboard =
     |0L -> 0
     |_ -> (
       let next_board = Utils.pop_lsb bit_chessboard in
-      let next_i = Utils.get_lsb bit_chessboard in
+      let next_i = Utils.get_lsb2 bit_chessboard in
       Coefs.w_pawn.(i) + (point_value_aux next_i next_board)
     )
   in point_value_aux index chessboard
