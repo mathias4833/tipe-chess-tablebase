@@ -1,56 +1,111 @@
 open Int64;;
 
+(* Genere la liste des combinaisons de 0 et de 1 à partir d'un nombre donne *)
+let generate_combinations bitboard =
+  (* Nombre de combinaisons possible, n = 2^p avec p le nombre de 1 *)
+  let n = to_int (shift_left 1L (Utils.count_ones bitboard)) in
+  (* Cree la combinaison associee au nombre, 0 <= x < n pour avoir toutes les combinaisons *)
+  let rec generate_combinations_aux bitboard x acc =
+    let index = ref 0 in
+    let combination = ref bitboard in
+    (* Parcours du nombre pour remplacer les 1 par des 0 *)
+    for k = 0 to 63 do
+      (* Si le k-ieme bit de !combination est un 1 alors que celui de x est un 0 *)
+      if (Utils.get_nth !combination k) = 1L then (
+        if (Utils.get_nth (of_int x) !index) = 0L then (
+          (* On remplace le k-ieme bit par un 0 *)
+          combination := Utils.clear_nth !combination k;
+        );
+        index := !index + 1
+      );
+    done;
+    match x with
+    |0 -> acc
+    |_ -> generate_combinations_aux bitboard (x-1) ((!combination)::acc)
+  in generate_combinations_aux bitboard (n-1) [] 
+;;
 
-(* Genere l'ensemble des tableau des positions attaquables par la tour *)
-let generate_rook_masks =
-    let column = 0x101010101010101L and line = 0xffL in
-    let attacks = Array.make 64 0L in
-    let rec aux i j =
-        let n = 8 * i + j in
-        attacks.(n) <- logor (shift_left line (8*i)) (shift_left column j);
-        (* Supprime la case ou se trouve la piece *)
-        attacks.(n) <- logand attacks.(n) (lognot (shift_left 1L n)); 
-        (* Supprime les bords si la case n'est pas sur un bord,
-           reduit le nombre de positions possibles *)
-        if i != 0 then
-            attacks.(n) <- logand attacks.(n) (lognot line);
-        if i != 7 then
-            attacks.(n) <- logand attacks.(n) (lognot (shift_left line (8*7)));
-        if j != 0 then
-            attacks.(n) <- logand attacks.(n) (lognot column);
-        if j != 7 then
-            attacks.(n) <- logand attacks.(n) (lognot (shift_left column 7));
-        
-        match (i, j) with
-        |(7, 7) -> attacks
-        |(i, 7) -> aux (i+1) 0
-        |(i, j) -> aux i (j+1)
-    in aux 0 0
+(* Genere le masque associe aux coordonnees i j *)
+let generate_mask i j =
+  let column = 0x101010101010101L and line = 0xffL in
+
+  let n = 8 * i + j in
+  let mask = ref 0L in
+  (* Remplace la ligne et la colonne ou se trouve la piece par des 1 *)
+  mask := logor (shift_left line (8*i)) (shift_left column j);
+
+  (* Supprime la case ou se trouve la piece *)
+  mask := logand !mask (lognot (shift_left 1L n)); 
+
+  (* Supprime les bords si la case n'est pas sur un bord, 
+    reduit le nombre de positions possibles *)
+  if i != 0 then
+    mask := logand !mask (lognot line);
+  if i != 7 then
+    mask := logand !mask (lognot (shift_left line (8*7)));
+  if j != 0 then
+    mask := logand !mask (lognot column);
+  if j != 7 then
+    mask := logand !mask (lognot (shift_left column 7));
+  
+  !mask
+;;
+
+(* Genere l'ensemble des positions avec des bloqueurs, pour une case donnee *)
+let generate_blockers i j =
+  let column = 0x101010101010101L and line = 0xffL in
+  let mask = generate_mask i j in
+
+  let rec generate_blockers_aux l1 l2 c1 c2 acc =
+    (* Masque des cases accessible depuis (i, j) *)
+    let accessible = ref mask in 
+
+    (* On enleve les pieces en dessous de l1 *)
+    for k = 0 to l1 do
+      accessible := logand !accessible (lognot (shift_left line (8*k)));
+    done;
+    (* On enleve les pieces au dessus de l2 *)
+    for k = l2 to 7 do
+      accessible := logand !accessible (lognot (shift_left line (8*k)));
+    done;
+    (* On enleve les pieces a gauche de c1 *)
+    for k = 0 to c1 do
+      accessible := logand !accessible (lognot (shift_left column k));
+    done;
+    (* On enleve les pieces a droite de c2 *)
+    for k = c2 to 7 do
+      accessible := logand !accessible (lognot (shift_left column k));
+    done;
+          
+    (* On recupere les cases innacessibles *)
+    let inaccessible = logand mask (lognot !accessible) in
+    (* Liste contenant tous les bloqueurs possible *)
+    let blockers = generate_combinations inaccessible in
+
+    match (l1, l2, c1, c2) with
+    |(0, 7, 0, 7) -> acc
+    |(_, 7, 0, 7) -> generate_blockers_aux (l1 - 1) l2 c1 c2 ((!accessible, blockers)::acc)
+    |(_, _, 0, 7) -> generate_blockers_aux l1 (l2 + 1) c1 c2 ((!accessible, blockers)::acc)
+    |(_, _, _, 7) -> generate_blockers_aux l1 l2 (c1 - 1) c2 ((!accessible, blockers)::acc)
+    |_ -> generate_blockers_aux l1 l2 c1 (c2 + 1) ((!accessible, blockers)::acc)
+  in (mask, generate_blockers_aux (i-1) (i+1) (j-1) (j+1) [])
 ;;
 
 
-(* Genere l'ensemble des blocker boards pour un masque donné *)
-let generate_blockers mask =
-    (* Tableau de taille n=2^p où p est le nombre de 1 *)
-    let n = to_int (shift_left 1L (Utils.count_ones mask)) in
-    let blockers = Array.make n mask in 
-    
-    (* Crée un bloqueur unique basé sur le nombre donné en entrée
-       0 <= x < n pour avoir toutes les combinaisons possibles *)
-    let rec generate x =
-        let index = ref 0 in 
-        for k = 0 to 63 do
-            if (Utils.get_nth blockers.(x) k) = 1L then (
-                if (Utils.get_nth (of_int x) !index) = 0L then
-                    blockers.(x) <- Utils.clear_nth blockers.(x) k; 
-                index := !index + 1 
-            )
-        done;
-        match x with
-        |0 -> blockers
-        |_ -> generate (x - 1)
-    in generate (n - 1)
+
+(* Genere le tableau de l'ensemble des bloqueurs, tableau de 64 couples (a, b)
+   avec a le masque des positions accessibles, et b la liste de tous les bloqueurs
+   et position resultante *)
+let generate_rook_attacks () =
+  let board = Array.make 64 [] in
+  
+  let rec generate_rook_table_aux i j =
+    let n = 8*i + j in
+    board.(n) <- generate_blockers i j;
+    match (i, j) with
+    |(7, 7) -> board
+    |(_, 7) -> generate_rook_table_aux (i+1) 0
+    |_ -> generate_rook_table_aux i (j+1)
+  in generate_rook_table_aux 0 0
 ;;
 
-
-(* Genere un hash unique par brut force*)
