@@ -97,7 +97,7 @@ let generate_blockers i j =
    avec a le masque des positions accessibles, et b la liste de tous les bloqueurs
    et position resultante *)
 let generate_rook_attacks () =
-  let board = Array.make 64 [] in
+  let board = Array.make 64 (0L, []) in
   
   let rec generate_rook_table_aux i j =
     let n = 8*i + j in
@@ -109,3 +109,39 @@ let generate_rook_attacks () =
   in generate_rook_table_aux 0 0
 ;;
 
+(* Creation du nombre magique *)
+let rec generate_magic (mask, blocker_list) =
+  let magic = Random.int64 (max_int) in
+  (* Nombre de combinaisons, n = 2^p avec p le nombre de 1 *)
+  let n = to_int (shift_left 1L (Utils.count_ones mask)) in
+  
+  let index_map = Hashtbl.create 1000 in
+  
+  (* Verifie si le nombre est bien magique *)
+  let rec is_magic accessible blockers =
+    match blockers with
+    |[] -> true
+    |h::t -> (
+      (* Cree l'indice associee au blocker board *)
+      let magic_index = shift_right (mul h magic) n in
+      (* Si l'indice n'existe pas encore, on l'ajoute *)
+      if not (Hashtbl.mem index_map magic_index) then
+        Hashtbl.add index_map magic_index accessible;
+  
+      (* On renvoie true si la valeur associe a l'indice est le meme *)
+      match (Hashtbl.find index_map magic_index) = accessible with
+      |true -> is_magic accessible t
+      |_ -> false
+    )
+  in let rec check_magic l =
+    match l with
+    |[] -> magic (* Tous les elements verfient is_magic *)
+    |(accessible, blockers)::t when is_magic accessible blockers -> check_magic t (* Le nombre verifie is_magic, on continue*)
+    |_ -> generate_magic (mask, blocker_list) (* On essaie un nouveau nombre *)
+  in check_magic blocker_list
+;;
+
+let generate_all_magics () =
+  let attacks = generate_rook_attacks () in
+  Array.init 1 (fun n -> generate_magic attacks.(n))
+;;
