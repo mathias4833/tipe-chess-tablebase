@@ -82,11 +82,13 @@ let generate_blockers i j =
     (* Liste contenant tous les bloqueurs possible *)
     let blockers = generate_combinations inaccessible in
 
+    (*TODO: pas coder en dur les possibilites
+      Actuellement dans ce cas car indices peuvent sortir du bord dans le cas d'une case sur le cote *)
     match (l1, l2, c1, c2) with
-    |(0, 7, 0, 7) -> acc
-    |(_, 7, 0, 7) -> generate_blockers_aux (l1 - 1) l2 c1 c2 ((!accessible, blockers)::acc)
-    |(_, _, 0, 7) -> generate_blockers_aux l1 (l2 + 1) c1 c2 ((!accessible, blockers)::acc)
-    |(_, _, _, 7) -> generate_blockers_aux l1 l2 (c1 - 1) c2 ((!accessible, blockers)::acc)
+    |(0, 7, 0, 7)|(0, 7, 0, 8)|(0, 7, -1, 7)|(0, 7, -1, 8)|(0, 8, 0, 7)|(0, 8, 0, 8)|(0, 8, -1, 7)|(0, 8, -1, 8)|(-1, 7, 0, 7)|(-1, 7, 0, 8)|(-1, 7, -1, 7)|(-1, 7, -1, 8)|(-1, 8, 0, 7)|(-1, 8, 0, 8)|(-1, 8, -1, 7)|(-1, 8, -1, 8) -> acc
+    |(_, 7, 0, 7)|(_, 7, 0, 8)|(_, 7, -1, 7)|(_, 7, -1, 8)|(_, 8, 0, 7)|(_, 8, 0, 8)|(_, 8, -1, 8)|(_, 8, -1, 7) -> generate_blockers_aux (l1 - 1) (i+1) (j-1) (j+1) ((!accessible, blockers)::acc)
+    |(_, _, 0, 7)|(_, _, 0, 8)|(_, _, -1, 7)|(_, _, -1, 8) -> generate_blockers_aux l1 (l2 + 1) (j-1) (j+1) ((!accessible, blockers)::acc)
+    |(_, _, _, 7)|(_, _, _, 8) -> generate_blockers_aux l1 l2 (c1 - 1) (j+1) ((!accessible, blockers)::acc)
     |_ -> generate_blockers_aux l1 l2 c1 (c2 + 1) ((!accessible, blockers)::acc)
   in (mask, generate_blockers_aux (i-1) (i+1) (j-1) (j+1) [])
 ;;
@@ -109,9 +111,13 @@ let generate_rook_attacks () =
   in generate_rook_table_aux 0 0
 ;;
 
+
+Random.self_init ();;
+
 (* Creation du nombre magique *)
 let rec generate_magic (mask, blocker_list) =
   let magic = Random.int64 (max_int) in
+  print_endline (to_string magic);
   (* Nombre de combinaisons, n = 2^p avec p le nombre de 1 *)
   let n = to_int (shift_left 1L (Utils.count_ones mask)) in
   
@@ -125,9 +131,10 @@ let rec generate_magic (mask, blocker_list) =
       (* Cree l'indice associee au blocker board *)
       let magic_index = shift_right (mul h magic) n in
       (* Si l'indice n'existe pas encore, on l'ajoute *)
-      if not (Hashtbl.mem index_map magic_index) then
+      if not (Hashtbl.mem index_map magic_index) then (
         Hashtbl.add index_map magic_index accessible;
-  
+      );
+      Board.print_bitboard (h);
       (* On renvoie true si la valeur associe a l'indice est le meme *)
       match (Hashtbl.find index_map magic_index) = accessible with
       |true -> is_magic accessible t
