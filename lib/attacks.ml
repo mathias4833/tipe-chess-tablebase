@@ -79,8 +79,33 @@ let generate_blockers i j =
           
     (* On recupere les cases innacessibles *)
     let inaccessible = logand mask (lognot !accessible) in
-    (* Liste contenant tous les bloqueurs possible *)
-    let blockers = generate_combinations inaccessible in
+
+    (* On cree un masque avec les coordonnees l1 l2 c1 c2 *)
+    let boundaries_mask = 
+      let temp = ref 0L in
+      if l1 > -1 then
+        temp := logor !temp (logand mask (shift_left line (8*l1)));
+      if l2 < 8 then
+        temp := logor !temp (logand mask (shift_left line (8*l2)));
+      if c1 > -1 then
+        temp := logor !temp (logand mask (shift_left column c1));
+      if c2 < 8 then
+        temp := logor !temp (logand mask (shift_left line (c2)));
+      !temp
+    in
+
+    (* Liste contenant tous les bloqueurs possible,  *)
+    let blockers = 
+      (* On ajoute recursivement les limites *)
+      let rec aux l acc =
+        match l with
+        |[] -> acc
+        |h::t -> aux t ((logor h (logand inaccessible boundaries_mask))::acc)
+      in 
+      (* Toutes les combinaisons sans les cases limites *)
+      aux (generate_combinations (logand inaccessible (lognot boundaries_mask))) []
+    in
+    Board.print_bitboard mask;
 
     (*TODO: pas coder en dur les possibilites
       Actuellement dans ce cas car indices peuvent sortir du bord dans le cas d'une case sur le cote *)
