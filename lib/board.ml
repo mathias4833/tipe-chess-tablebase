@@ -16,7 +16,7 @@ type chessboard = {
 };;
 
 (* Layout *)
-let x = [|
+let layout = [|
   56;57;58;59;60;61;62;63;
   48;49;50;51;52;53;54;55;
   40;41;42;43;44;45;46;47;
@@ -27,6 +27,8 @@ let x = [|
   00;01;02;03;04;05;06;07;
 |];;
 
+let column = 0x101010101010101L;;
+let line = 0xffL;;
 
 (* Position initiale *)
 let init_board = {
@@ -45,7 +47,6 @@ let init_board = {
 };;
 
 (* Print the bitboard *)
-(* TODO: Commenter *)
 let print_bitboard x =
   let rec line i n =
     match i, n with

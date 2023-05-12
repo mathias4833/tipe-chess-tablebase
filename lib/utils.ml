@@ -72,3 +72,18 @@ let rec count_ones x =
     |x when (logand x 1L) = 1L -> 1 + count_ones (shift_right x 1)
     |_ -> count_ones (shift_right x 1)
 ;;
+
+(* Met un 1 en position i j *)
+let create_board i j =
+  if i < 0 || i > 7 || j < 0 || j > 7 then
+    0L
+  else
+    shift_left 1L (56 - i*8 + j)
+;;
+
+
+let rec print_list_board l =
+  match l with
+  |[]->()
+  |h::t-> Board.print_bitboard h; print_string "\n" ; print_list_board t
+;;
