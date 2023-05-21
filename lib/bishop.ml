@@ -43,7 +43,7 @@ let generate_access i j =
 
 
 let generate_blockers i j =
-  let mask = generate_mask i j in
+  let _mask = generate_mask i j in
 
   let start_line = if i = 0 then -1 else 0 in
   let stop_line = if i = 7 then 8 else 7 in
@@ -54,12 +54,12 @@ let generate_blockers i j =
     for l2 = stop_line downto (j+1) do
       for c1 = start_column to (i-1) do
         for c2 = stop_column downto (i+1) do
-          let nearest_blockers = List.fold_left logor [
+          let _nearest_blockers = List.fold_left logor 0L [
             Utils.create_board l1 j;
             Utils.create_board l2 j;
             Utils.create_board i c1;
-            Utils.create_board i c2] 0L in
-
+            Utils.create_board i c2] in
+            ()
           
         done;
       done;

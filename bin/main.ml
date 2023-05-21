@@ -1,7 +1,24 @@
 open Chess_engine;;
 
-let x = Bishop.generate_blockers 3 5 in
-Utils.print_list_board x;;
+(*
+let (_, l) = Rook.generate_blockers 2 4 in
+
+let rec aux l =
+  match l with
+  |[] -> ()
+  |(a, l2)::t -> (
+    print_endline "--------";
+    Board.print_bitboard a;
+    print_endline "-";
+    Utils.print_list_board l2;
+    aux t
+  )
+in aux l;;
+*)
+
+let (x, _) = Rook.generate_magic (Rook.generate_blockers 3 3) in
+print_endline (Int64.to_string x);;
+
 (*
 let x = Attacks.generate_rook_attacks () in
 let a, l = match x.(0) with

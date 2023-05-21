@@ -78,7 +78,7 @@ let create_board i j =
   if i < 0 || i > 7 || j < 0 || j > 7 then
     0L
   else
-    shift_left 1L (56 - i*8 + j)
+    shift_left 1L (i*8 + j)
 ;;
 
 
