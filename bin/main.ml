@@ -16,9 +16,13 @@ let rec aux l =
 in aux l;;
 *)
 
+let x = Rook.generate_possible_cases () in
+print_endline (string_of_int (Hashtbl.length x.(13)));;
+
+(*
 let (x, _) = Rook.generate_magic (Rook.generate_blockers 3 3) in
 print_endline (Int64.to_string x);;
-
+*)
 (*
 let x = Attacks.generate_rook_attacks () in
 let a, l = match x.(0) with

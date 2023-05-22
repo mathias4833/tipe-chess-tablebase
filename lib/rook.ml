@@ -110,6 +110,31 @@ let generate_blockers i j =
 ;;
 
 
+(* TODO: Commenter ! *)
+(* Creation d'un tableau de dictionnaires contenant positions accessible *)
+let generate_possible_cases () =
+  (* Cree le dictionnaire bloqueurs / cases accessibles *)
+  let create_hashmap n =
+    let i = n / 8 and j = n mod 8 in
+    let (_, all_blockers) = generate_blockers i j in (* Ensemble des bloqueurs *)
+    let hashmap = Hashtbl.create 1024 in (* Dictionnaire vide *)
+
+    let rec aux1 l accessible hashmap =
+      match l with
+      |[] -> hashmap
+      |h::t -> (
+        Hashtbl.add hashmap h accessible;
+        aux1 t accessible hashmap
+      )
+    and aux2 l hashmap =
+      match l with
+      |[] -> hashmap
+      |(accessible, blockers)::t -> aux2 t (aux1 blockers  accessible hashmap)
+    in aux2 all_blockers hashmap
+  in Array.init 64 create_hashmap 
+;;
+
+
 Random.self_init ();;
 
 (* Creation du nombre magique *)
