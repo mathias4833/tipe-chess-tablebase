@@ -1,4 +1,5 @@
 open Int64;;
+open Board;;
 
 (* Renvoie la valeur du nth bit *)
 let get_nth x n =
@@ -86,4 +87,64 @@ let rec print_list_board l =
   match l with
   |[]->()
   |h::t-> Board.print_bitboard h; print_string "\n" ; print_list_board t
+;;
+
+(* Renvoie la position avec les enemis *)
+let complete_board chessboard is_white =
+  match is_white with
+  |true -> List.fold_left logor 0L [
+      chessboard.b_pawns;
+      chessboard.b_knights;
+      chessboard.b_bishops;
+      chessboard.b_rooks;
+      chessboard.b_queen;
+      chessboard.b_king
+    ]
+  |_ -> List.fold_left logor 0L [
+      chessboard.w_pawns;
+      chessboard.w_knights;
+      chessboard.w_bishops;
+      chessboard.w_rooks;
+      chessboard.w_queen;
+      chessboard.w_king
+    ]
+;;
+
+let enemy_board chessboard =
+  complete_board chessboard (not chessboard.is_white)
+;;
+
+let friendly_board chessboard =
+  complete_board chessboard chessboard.is_white
+;;
+
+(* Genere la liste des combinaisons de 0 et de 1 à partir d'un nombre donne *)
+let generate_combinations bitboard =
+  (* Nombre de combinaisons possible, n = 2^p avec p le nombre de 1 *)
+  let n = to_int (shift_left 1L (count_ones bitboard)) in
+  (* Cree la combinaison associee au nombre, 0 <= x < n pour avoir toutes les combinaisons *)
+  let rec generate_combinations_aux bitboard x acc =
+    let index = ref 0 in
+    let combination = ref bitboard in
+    (* Parcours du nombre pour remplacer les 1 par des 0 *)
+    for k = 0 to 63 do
+      (* Si le k-ieme bit de !combination est un 1 alors que celui de x est un 0 *)
+      if (get_nth !combination k) = 1L then (
+        if (get_nth (of_int x) !index) = 0L then (
+          (* On remplace le k-ieme bit par un 0 *)
+          combination := clear_nth !combination k;
+        );
+        index := !index + 1
+      );
+    done;
+    match x with
+    |0 -> ((!combination)::acc)
+    |_ -> generate_combinations_aux bitboard (x-1) ((!combination)::acc)
+  in generate_combinations_aux bitboard (n-1) [] 
+;;
+
+let generate_combinations_without_empty bitboard = 
+  match generate_combinations bitboard with
+  |[] -> []
+  |_::t -> t (* Le premier element est la position vide *)
 ;;

@@ -1,7 +1,7 @@
 open Chess_engine;;
 
-(*
-let (_, l) = Rook.generate_blockers 2 4 in
+
+let (_, l) = Bishop.generate_blockers 0 0 in
 
 let rec aux l =
   match l with
@@ -14,10 +14,10 @@ let rec aux l =
     aux t
   )
 in aux l;;
-*)
 
-let x = Rook.generate_possible_cases () in
-print_endline (string_of_int (Hashtbl.length x.(13)));;
+(*
+let x = Bishop.generate_possible_cases () in
+print_endline (string_of_int (Hashtbl.length x.(0)));;*)
 
 (*
 let (x, _) = Rook.generate_magic (Rook.generate_blockers 3 3) in

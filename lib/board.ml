@@ -12,7 +12,8 @@ type chessboard = {
     b_bishops: int64;
     b_rooks: int64;
     b_queen: int64;
-    b_king: int64
+    b_king: int64;
+    is_white: bool
 };;
 
 (* Layout *)
@@ -44,6 +45,7 @@ let init_board = {
     b_rooks = 0x8100000000000000L;
     b_queen = 0x800000000000000L;
     b_king = 0x1000000000000000L;
+    is_white = true
 };;
 
 (* Print the bitboard *)

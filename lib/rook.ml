@@ -1,31 +1,5 @@
 open Int64;;
 
-(* Genere la liste des combinaisons de 0 et de 1 à partir d'un nombre donne *)
-let generate_combinations bitboard =
-  (* Nombre de combinaisons possible, n = 2^p avec p le nombre de 1 *)
-  let n = to_int (shift_left 1L (Utils.count_ones bitboard)) in
-  (* Cree la combinaison associee au nombre, 0 <= x < n pour avoir toutes les combinaisons *)
-  let rec generate_combinations_aux bitboard x acc =
-    let index = ref 0 in
-    let combination = ref bitboard in
-    (* Parcours du nombre pour remplacer les 1 par des 0 *)
-    for k = 0 to 63 do
-      (* Si le k-ieme bit de !combination est un 1 alors que celui de x est un 0 *)
-      if (Utils.get_nth !combination k) = 1L then (
-        if (Utils.get_nth (of_int x) !index) = 0L then (
-          (* On remplace le k-ieme bit par un 0 *)
-          combination := Utils.clear_nth !combination k;
-        );
-        index := !index + 1
-      );
-    done;
-    match x with
-    |0 -> ((!combination)::acc)
-    |_ -> generate_combinations_aux bitboard (x-1) ((!combination)::acc)
-  in generate_combinations_aux bitboard (n-1) [] 
-;;
-
-
 (* Genere le masque associe aux coordonnees i j *)
 let generate_mask i j =
   let n = 8 * i + j in
@@ -97,7 +71,7 @@ let generate_blockers i j =
               match l with
               |[] -> acc
               |h::t -> aux t ((logor h nearest_blockers)::acc)
-            in aux (generate_combinations full_blockers) []
+            in aux (Utils.generate_combinations full_blockers) []
           in
           
           blockers_list := (accessible_mask, blockers)::!blockers_list

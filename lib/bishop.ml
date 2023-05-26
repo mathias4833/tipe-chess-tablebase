@@ -1,5 +1,5 @@
 open Int64;;
-                
+
 
 let generate_mask  i j =
 	let pos = 1L in
@@ -17,63 +17,88 @@ let generate_mask  i j =
 	!mask
 	;;
 
-
-
-let generate_access i j =
-  let pos=1L in
-  let accesslist = ref [] in
-  let mask = ref (generate_mask i j) in
-  for k=7 downto 1 do 
-		let a = i+k in
-		let b = i-k in 
-		let c = j+k in
-		let d = j-k in
-    if 0<a && 8>a && 0<c && 8>c then ( mask:= logand !mask (lognot (shift_left pos (a*8+c)));
-                                      accesslist:= !mask::!accesslist);
-		if 0<a && 8>a && 0<d && 8>d then ( mask:= logand !mask (lognot (shift_left pos (a*8+d)));
-                                      accesslist:= !mask::!accesslist);
-		if 0<b && 8>b && 0<c && 8>c then ( mask:= logand !mask (lognot (shift_left pos (b*8+c)));
-                                      accesslist:= !mask::!accesslist);
-		if 0<b && 8>b && 0<d && 8>d then ( mask:= logand !mask (lognot (shift_left pos (b*8+d)));
-                                      accesslist:= !mask::!accesslist);
-
+let generate_blockers_from_nearest i j dhd dhg dbd dbg =
+  let blockers = ref 0L in
+  for n = dhg+1 to 6 do
+    blockers := logor !blockers (Utils.create_board (i+n) (j-n));
   done;
-  !accesslist
+  for n = dhd+1 to 6 do
+    blockers := logor !blockers (Utils.create_board (i+n) (j+n))
+  done;
+  for n = dbd+1 to 6 do
+    blockers := logor !blockers (Utils.create_board (i-n) (j+n))
+  done;
+  for n = dbg+1 to 6 do
+    blockers := logor !blockers (Utils.create_board (i-n) (j-n))
+  done;
+  !blockers
 ;;
 
-
+(* Genere l'ensemble des positions avec des bloqueurs, pour une case donnee *)
 let generate_blockers i j =
-  let _mask = generate_mask i j in
+  let mask = generate_mask i j in 
+  let blockers_list = ref [] in
+  
+  let stop_cg = if j = 0 then -1 else 1 in
+  let stop_lb = if i = 0 then -1 else 1 in
+  let stop_cd = if j = 7 then -1 else 1 in
+  let stop_lh = if j = 7 then -1 else 1 in
+  
+  for dhg = 1 to (Int.min (7-i+stop_lh) (j+stop_cg)) do
+    for dhd = 1 to (Int.min (7-i+stop_lh) (7-j+stop_cd)) do
+      for dbg = 1 to (Int.min (i+stop_lb) (j+stop_cg)) do
+        for dbd = 1 to (Int.min (i+stop_lb) (7-j+stop_cd)) do
+          print_endline "hey";
+          let nearest_blockers = List.fold_left logor 0L [
+            Utils.create_board (i+dhd) (j+dhd);
+            Utils.create_board (i+dhg) (j-dhg);
+            Utils.create_board (i-dbd) (j+dbd);
+            Utils.create_board (i-dbg) (j-dbg)] in
+          let full_blockers = generate_blockers_from_nearest i j dhd dhg dbd dbg in
+          let accessible_mask = logand mask (lognot (logor nearest_blockers full_blockers)) in
 
-  let start_line = if i = 0 then -1 else 0 in
-  let stop_line = if i = 7 then 8 else 7 in
-  let start_column = if j = 0 then -1 else 0 in
-  let stop_column = if j = 7 then 8 else 7 in
-
-  for l1 = start_line to (j-1) do
-    for l2 = stop_line downto (j+1) do
-      for c1 = start_column to (i-1) do
-        for c2 = stop_column downto (i+1) do
-          let _nearest_blockers = List.fold_left logor 0L [
-            Utils.create_board l1 j;
-            Utils.create_board l2 j;
-            Utils.create_board i c1;
-            Utils.create_board i c2] in
-            ()
+          (* Liste contenant les bloqueurs possibles *)
+          let blockers =
+            let rec aux l acc =
+              match l with
+              |[] -> acc
+              |h::t -> aux t ((logor h nearest_blockers)::acc)
+            in aux (Utils.generate_combinations full_blockers) []
+          in
           
+          blockers_list := (accessible_mask, blockers)::!blockers_list
         done;
       done;
     done;
   done;
-    
-    
-    
+
+  (mask, !blockers_list)
 ;;
 
 
+(* TODO: Commenter ! *)
+(* Creation d'un tableau de dictionnaires contenant positions accessible *)
+let generate_possible_cases () =
+  (* Cree le dictionnaire bloqueurs / cases accessibles *)
+  let create_hashmap n =
+    let i = n / 8 and j = n mod 8 in
+    let (_, all_blockers) = generate_blockers i j in (* Ensemble des bloqueurs *)
+    let hashmap = Hashtbl.create 1024 in (* Dictionnaire vide *)
 
-
-
+    let rec aux1 l accessible hashmap =
+      match l with
+      |[] -> hashmap
+      |h::t -> (
+        Hashtbl.add hashmap h accessible;
+        aux1 t accessible hashmap
+      )
+    and aux2 l hashmap =
+      match l with
+      |[] -> hashmap
+      |(accessible, blockers)::t -> aux2 t (aux1 blockers  accessible hashmap)
+    in aux2 all_blockers hashmap
+  in Array.init 64 create_hashmap 
+;;
 
 
 
