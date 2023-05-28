@@ -1,5 +1,6 @@
 
-let diff_materiel (chessboard: Board.chessboard) =
+(*
+let diff_materiel chessboard =
 1*((Utils.count_ones chessboard.w_pawns) - (Utils.count_ones chessboard.b_pawns))
 +3*((Utils.count_ones chessboard.w_bishops) - (Utils.count_ones chessboard.b_bishops))
 +3*((Utils.count_ones chessboard.w_knights) - (Utils.count_ones chessboard.b_knights))
@@ -20,14 +21,4 @@ let point_value index chessboard =
   in point_value_aux index chessboard
 ;;
 
-  
-    
-
-
-
-
-                    
-                   
-                    
-
-
+*)

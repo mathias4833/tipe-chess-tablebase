@@ -1,5 +1,5 @@
 open Int64;;
-
+open Utils;;
 
 let generate_mask  i j =
 	let pos = 1L in
@@ -20,16 +20,16 @@ let generate_mask  i j =
 let generate_blockers_from_nearest i j dhd dhg dbd dbg =
   let blockers = ref 0L in
   for n = dhg+1 to 6 do
-    blockers := logor !blockers (Utils.create_board (i+n) (j-n));
+    blockers := logor !blockers (Bitboard.from_coordinate (i+n) (j-n));
   done;
   for n = dhd+1 to 6 do
-    blockers := logor !blockers (Utils.create_board (i+n) (j+n))
+    blockers := logor !blockers (Bitboard.from_coordinate (i+n) (j+n))
   done;
   for n = dbd+1 to 6 do
-    blockers := logor !blockers (Utils.create_board (i-n) (j+n))
+    blockers := logor !blockers (Bitboard.from_coordinate (i-n) (j+n))
   done;
   for n = dbg+1 to 6 do
-    blockers := logor !blockers (Utils.create_board (i-n) (j-n))
+    blockers := logor !blockers (Bitboard.from_coordinate (i-n) (j-n))
   done;
   !blockers
 ;;
@@ -50,10 +50,10 @@ let generate_blockers i j =
         for dbd = 1 to (Int.min (i+stop_lb) (7-j+stop_cd)) do
           print_endline "hey";
           let nearest_blockers = List.fold_left logor 0L [
-            Utils.create_board (i+dhd) (j+dhd);
-            Utils.create_board (i+dhg) (j-dhg);
-            Utils.create_board (i-dbd) (j+dbd);
-            Utils.create_board (i-dbg) (j-dbg)] in
+            Bitboard.from_coordinate (i+dhd) (j+dhd);
+            Bitboard.from_coordinate (i+dhg) (j-dhg);
+            Bitboard.from_coordinate (i-dbd) (j+dbd);
+            Bitboard.from_coordinate (i-dbg) (j-dbg)] in
           let full_blockers = generate_blockers_from_nearest i j dhd dhg dbd dbg in
           let accessible_mask = logand mask (lognot (logor nearest_blockers full_blockers)) in
 
@@ -63,7 +63,7 @@ let generate_blockers i j =
               match l with
               |[] -> acc
               |h::t -> aux t ((logor h nearest_blockers)::acc)
-            in aux (Utils.generate_combinations full_blockers) []
+            in aux (Bitboard.generate_combinations full_blockers) []
           in
           
           blockers_list := (accessible_mask, blockers)::!blockers_list

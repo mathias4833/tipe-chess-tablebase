@@ -1,11 +1,12 @@
 open Int64;;
+open Utils;;
 
 (* Genere le masque associe aux coordonnees i j *)
 let generate_mask i j =
   let n = 8 * i + j in
   let mask = ref 0L in
   (* Remplace la ligne et la colonne ou se trouve la piece par des 1 *)
-  mask := logor (shift_left Board.line (8*i)) (shift_left Board.column j);
+  mask := logor (shift_left Bitboard.line (8*i)) (shift_left Bitboard.column j);
 
   (* Supprime la case ou se trouve la piece *)
   mask := logand !mask (lognot (shift_left 1L n)); 
@@ -13,13 +14,13 @@ let generate_mask i j =
   (* Supprime les bords si la case n'est pas sur un bord, 
     reduit le nombre de positions possibles *)
   if i != 0 then
-    mask := logand !mask (lognot Board.line);
+    mask := logand !mask (lognot Bitboard.line);
   if i != 7 then
-    mask := logand !mask (lognot (shift_left Board.line (8*7)));
+    mask := logand !mask (lognot (shift_left Bitboard.line (8*7)));
   if j != 0 then
-    mask := logand !mask (lognot Board.column);
+    mask := logand !mask (lognot Bitboard.column);
   if j != 7 then
-    mask := logand !mask (lognot (shift_left Board.column 7));
+    mask := logand !mask (lognot (shift_left Bitboard.column 7));
   
   !mask
 ;;
@@ -28,16 +29,16 @@ let generate_mask i j =
 let generate_blockers_from_nearest i j l1 l2 c1 c2 =
   let blockers = ref 0L in
   for n = 1 to l1 - 1 do
-    blockers := logor !blockers (Utils.create_board n j);
+    blockers := logor !blockers (Bitboard.from_coordinate n j);
   done;
   for n = l2 + 1 to 6 do
-    blockers := logor !blockers (Utils.create_board n j)
+    blockers := logor !blockers (Bitboard.from_coordinate n j)
   done;
   for n = 1 to c1 - 1 do
-    blockers := logor !blockers (Utils.create_board i n)
+    blockers := logor !blockers (Bitboard.from_coordinate i n)
   done;
   for n = c2 + 1 to 6 do
-    blockers := logor !blockers (Utils.create_board i n)
+    blockers := logor !blockers (Bitboard.from_coordinate i n)
   done;
   !blockers
 ;;
@@ -57,10 +58,10 @@ let generate_blockers i j =
       for c1 = start_column to (j-1) do
         for c2 = stop_column downto (j+1) do
           let nearest_blockers = logand mask (List.fold_left logor 0L [
-            Utils.create_board l1 j;
-            Utils.create_board l2 j;
-            Utils.create_board i c1;
-            Utils.create_board i c2]) in
+            Bitboard.from_coordinate l1 j;
+            Bitboard.from_coordinate l2 j;
+            Bitboard.from_coordinate i c1;
+            Bitboard.from_coordinate i c2]) in
           
           let full_blockers = generate_blockers_from_nearest i j l1 l2 c1 c2 in
           let accessible_mask = logand mask (lognot (logor nearest_blockers full_blockers)) in
@@ -71,7 +72,7 @@ let generate_blockers i j =
               match l with
               |[] -> acc
               |h::t -> aux t ((logor h nearest_blockers)::acc)
-            in aux (Utils.generate_combinations full_blockers) []
+            in aux (Bitboard.generate_combinations full_blockers) []
           in
           
           blockers_list := (accessible_mask, blockers)::!blockers_list
@@ -108,42 +109,3 @@ let generate_possible_cases () =
   in Array.init 64 create_hashmap 
 ;;
 
-
-Random.self_init ();;
-
-(* Creation du nombre magique *)
-let rec generate_magic (mask, blocker_list) =
-  let magic = Random.int64 (max_int) in
-  (* Nombre de combinaisons, n = 2^p avec p le nombre de 1 *)
-  let n = to_int (shift_left 1L (Utils.count_ones mask)) in
-  let index_map = Hashtbl.create 1000 in
-  
-  (* Verifie si le nombre est bien magique *)
-  let rec is_magic accessible blockers =
-    match blockers with
-    |[] -> true
-    |h::t -> (
-      (* Cree l'indice associee au blocker board *)
-      let magic_index = shift_right (mul h magic) n in
-      (* Si l'indice n'existe pas encore, on l'ajoute *)
-      if not (Hashtbl.mem index_map magic_index) then (
-        Hashtbl.add index_map magic_index accessible;
-      );
-      (* On renvoie true si la valeur associe a l'indice est le meme *)
-      match (Hashtbl.find index_map magic_index) = accessible with
-      |true -> is_magic accessible t
-      |_ -> false
-    )
-  in let rec check_magic l =
-    match l with
-    |[] -> (
-      print_endline (string_of_int (Hashtbl.length index_map));
-      if (Hashtbl.length index_map < 1024) then
-        (magic, index_map) (* Tous les elements verfient is_magic *)
-      else
-        generate_magic (mask, blocker_list)
-    )
-    |(accessible, blockers)::t when is_magic accessible blockers -> check_magic t (* Le nombre verifie is_magic, on continue*)
-    |_ -> generate_magic (mask, blocker_list) (* On essaie un nouveau nombre *)
-  in check_magic blocker_list
-;;

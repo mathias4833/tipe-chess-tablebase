@@ -1,4 +1,6 @@
+(include_subdirs unqualified)
+
 (executable
  (public_name chess_engine)
  (name main)
- (libraries chess_engine))
+ (libraries moves evaluation utils))

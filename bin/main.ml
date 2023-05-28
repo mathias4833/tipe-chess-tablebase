@@ -1,6 +1,11 @@
-open Chess_engine;;
+open Moves;;
 
+(*
+let l = Pawn.generate_moves (Board.init_board) in
+Bitboard.print_list_board l;;
+*)
 
+(*
 let (_, l) = Bishop.generate_blockers 0 0 in
 
 let rec aux l =
@@ -8,16 +13,18 @@ let rec aux l =
   |[] -> ()
   |(a, l2)::t -> (
     print_endline "--------";
-    Board.print_bitboard a;
+    Bitboard.print_board a;
     print_endline "-";
-    Utils.print_list_board l2;
+    Bitboard.print_list_board l2;
     aux t
   )
 in aux l;;
+*)
 
-(*
-let x = Bishop.generate_possible_cases () in
-print_endline (string_of_int (Hashtbl.length x.(0)));;*)
+
+let x = Rook.generate_possible_cases () in
+print_endline (string_of_int (Hashtbl.length x.(0)));;
+
 
 (*
 let (x, _) = Rook.generate_magic (Rook.generate_blockers 3 3) in
