@@ -110,6 +110,12 @@ let table_moves =
   in Array.init 64 create_hashmap 
 ;;
 
+(* Genere l'ensemble des positions accessibles pour un fou a l'indice n *)
+let moves_from_board ally whole n =
+    (* Bitboard contenant l'ensemble des pieces bloquantes *)
+    let blockerboard = logand whole (table_mask.(n)) in
+    logand (Hashtbl.find table_moves.(n) blockerboard) (lognot ally)
+;;
 
 (* Genere l'ensemble des coups pour le fou *)
 let generate_moves chessboard =
@@ -121,11 +127,8 @@ let generate_moves chessboard =
     |0L -> acc
     |_ -> (
       let n = Bitboard.get_lsb board in
-      (* Bitboard contenant l'ensemble des pieces bloquantes *)
-      let blockerboard = logand whole (table_mask.(n)) in
-      let all_moves = logand (Hashtbl.find table_moves.(n) blockerboard) (lognot ally) in
-
-      generate_moves_aux (Bitboard.pop_lsb board) (Bitboard.add_moves_to_list all_moves acc)
+      let moves = moves_from_board ally whole n in
+      generate_moves_aux (Bitboard.pop_lsb board) (Bitboard.add_moves_to_list moves acc)
     )
   in
   generate_moves_aux (Board.if_w_else chessboard chessboard.wbishops chessboard.bbishops) []
