@@ -2,18 +2,14 @@ open Int64;;
 open Utils;;
 
 (* Genere le masque associe aux coordonnees i j, cases au bord inclues *)
-let generate_complete_mask i j =
+let generate_mask i j =
   let n = 8 * i + j in
+  let mask = ref 0L in
   (* Remplace la ligne et la colonne ou se trouve la piece par des 1 *)
-  let mask = logor (shift_left Bitboard.line (8*i)) (shift_left Bitboard.column j) in
+  mask := logor (shift_left Bitboard.line (8*i)) (shift_left Bitboard.column j);
 
   (* Supprime la case ou se trouve la piece *)
-  logand mask (lognot (shift_left 1L n)) 
-;;
-
-(* Genere le masque associe aux coordonnees i j, cases au bord exclues *)
-let generate_partial_mask i j =
-  let mask = ref (generate_complete_mask i j) in
+  mask := logand !mask (lognot (shift_left 1L n));
 
   (* Supprime les bords si la case n'est pas sur un bord,
     reduit le nombre de positions possibles *)
@@ -32,7 +28,7 @@ let generate_partial_mask i j =
 let table_mask =
   let create_table_mask n =
     let (i, j) = Bitboard.coord_of_index n in
-    generate_partial_mask i j
+    generate_mask i j
   in Array.init 64 create_table_mask 
 ;;
 
@@ -92,7 +88,7 @@ let generate_blockers i j =
     done;
   done;
 
-  (mask, !blockers_list)
+  !blockers_list
 ;;
 
 
@@ -102,7 +98,7 @@ let table_moves =
   (* Cree le dictionnaire bloqueurs / cases accessibles *)
   let create_hashmap n =
     let i = n / 8 and j = n mod 8 in
-    let (_, all_blockers) = generate_blockers i j in (* Ensemble des bloqueurs *)
+    let all_blockers = generate_blockers i j in (* Ensemble des bloqueurs *)
     let hashmap = Hashtbl.create 1024 in (* Dictionnaire vide *)
 
     let rec aux1 l accessible hashmap =

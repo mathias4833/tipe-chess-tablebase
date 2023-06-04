@@ -15,7 +15,16 @@ let generate_mask  i j =
 		if 0<b && 7>b && 0<d && 7>d then mask:= logor !mask (shift_left pos (b*8+d));
 	done;
 	!mask
-	;;
+;;
+
+(* Cree la table des masques (tableau de generate_mask i j) *)
+let table_mask =
+  let create_table_mask n =
+    let (i, j) = Bitboard.coord_of_index n in
+    generate_mask i j
+  in Array.init 64 create_table_mask 
+;;
+
 
 let generate_blockers_from_nearest i j dhd dhg dbd dbg =
   let blockers = ref 0L in
@@ -36,33 +45,34 @@ let generate_blockers_from_nearest i j dhd dhg dbd dbg =
 
 (* Genere l'ensemble des positions avec des bloqueurs, pour une case donnee *)
 let generate_blockers i j =
-  let mask = generate_mask i j in 
+  let mask = table_mask.(Bitboard.index_of_coord i j) in
   let blockers_list = ref [] in
+
+
+  let borderline_down = if i=0 then 1 else 0 in
+  let borderline_up = if i=7 then 1 else 0 in
+  let bordercolumn_left = if j=0 then 1 else 0 in
+  let bordercolumn_right = if j=7 then 1 else 0 in
   
-  let stop_cg = if j = 0 then -1 else 1 in
-  let stop_lb = if i = 0 then -1 else 1 in
-  let stop_cd = if j = 7 then -1 else 1 in
-  let stop_lh = if j = 7 then -1 else 1 in
-  
-  for dhg = 1 to (Int.min (7-i+stop_lh) (j+stop_cg)) do
-    for dhd = 1 to (Int.min (7-i+stop_lh) (7-j+stop_cd)) do
-      for dbg = 1 to (Int.min (i+stop_lb) (j+stop_cg)) do
-        for dbd = 1 to (Int.min (i+stop_lb) (7-j+stop_cd)) do
-          print_endline "hey";
+  for dhg = 1 to (Int.min (7-i+borderline_up) (j+bordercolumn_left)) do 
+    for dhd = 1 to (Int.min (7-i+borderline_up) (7-j+bordercolumn_right)) do
+      for dbg = 1 to (Int.min (i+borderline_down) (j+bordercolumn_left)) do
+        for dbd = 1 to (Int.min (i+borderline_down) (7-j+bordercolumn_right)) do
+        
           let nearest_blockers = List.fold_left logor 0L [
             Bitboard.from_coordinate (i+dhd) (j+dhd);
             Bitboard.from_coordinate (i+dhg) (j-dhg);
             Bitboard.from_coordinate (i-dbd) (j+dbd);
             Bitboard.from_coordinate (i-dbg) (j-dbg)] in
-          let full_blockers = generate_blockers_from_nearest i j dhd dhg dbd dbg in
-          let accessible_mask = logand mask (lognot (logor nearest_blockers full_blockers)) in
+          let full_blockers = logand mask (generate_blockers_from_nearest i j dhd dhg dbd dbg) in
+          let accessible_mask = logand (logor mask nearest_blockers) (lognot full_blockers) in
 
           (* Liste contenant les bloqueurs possibles *)
           let blockers =
             let rec aux l acc =
               match l with
               |[] -> acc
-              |h::t -> aux t ((logor h nearest_blockers)::acc)
+              |h::t -> aux t ((logand mask (logor h nearest_blockers))::acc)
             in aux (Bitboard.generate_combinations full_blockers) []
           in
           
@@ -72,17 +82,17 @@ let generate_blockers i j =
     done;
   done;
 
-  (mask, !blockers_list)
+  !blockers_list
 ;;
 
 
 (* TODO: Commenter ! *)
 (* Creation d'un tableau de dictionnaires contenant positions accessible *)
-let generate_possible_cases () =
+let table_moves =
   (* Cree le dictionnaire bloqueurs / cases accessibles *)
   let create_hashmap n =
     let i = n / 8 and j = n mod 8 in
-    let (_, all_blockers) = generate_blockers i j in (* Ensemble des bloqueurs *)
+    let all_blockers = generate_blockers i j in (* Ensemble des bloqueurs *)
     let hashmap = Hashtbl.create 1024 in (* Dictionnaire vide *)
 
     let rec aux1 l accessible hashmap =
@@ -101,4 +111,22 @@ let generate_possible_cases () =
 ;;
 
 
+(* Genere l'ensemble des coups pour le fou *)
+let generate_moves chessboard =
+  let ally = Board.get_ally_board chessboard in
+  let whole = Board.get_whole_board chessboard in
+  
+  let rec generate_moves_aux board acc =
+    match board with
+    |0L -> acc
+    |_ -> (
+      let n = Bitboard.get_lsb board in
+      (* Bitboard contenant l'ensemble des pieces bloquantes *)
+      let blockerboard = logand whole (table_mask.(n)) in
+      let all_moves = logand (Hashtbl.find table_moves.(n) blockerboard) (lognot ally) in
 
+      generate_moves_aux (Bitboard.pop_lsb board) (Bitboard.add_moves_to_list all_moves acc)
+    )
+  in
+  generate_moves_aux (Board.if_w_else chessboard chessboard.wbishops chessboard.bbishops) []
+;;

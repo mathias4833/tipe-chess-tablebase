@@ -1,13 +1,12 @@
 open Moves;;
 open Utils;;
-
 (*
 let l = Pawn.generate_moves (Board.init_board) in
 Bitboard.print_list_board l;;
 *)
 
 (*
-let (_, l) = Rook.generate_blockers 0 0 in
+let l = Queen.generate_blockers 4 3  in
 
 let rec aux l =
   match l with
@@ -21,6 +20,11 @@ let rec aux l =
   )
 in aux l;;
 *)
+(*
+print_int (Hashtbl.length (Bishop.table_moves.(Bitboard.index_of_coord 2 3)));
+*)
 
-Bitboard.print_list_board (Rook.generate_moves (Board.study_board));;
+Bitboard.print_list_board (Queen.generate_moves (Board.study_board));;
+
+
 
