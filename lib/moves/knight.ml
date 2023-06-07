@@ -28,7 +28,7 @@ let generate_moves chessboard =
     |_ -> (
       let n = Bitboard.get_lsb board in
       let all_moves = logand table_move.(n) (lognot ally) in
-      generate_moves_aux (Bitboard.pop_lsb board) (Bitboard.add_moves_to_list all_moves acc)
+      generate_moves_aux (Bitboard.pop_lsb board) (Move.add_moves_to_list N n all_moves acc)
     )
   in
   generate_moves_aux (Board.if_w_else chessboard chessboard.wknights chessboard.bknights) []

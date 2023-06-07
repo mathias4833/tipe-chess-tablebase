@@ -23,5 +23,5 @@ let generate_moves chessboard =
   let ally = Board.get_ally_board chessboard in
   (* Indice du roi sur l'echiquier *)
   let n = Bitboard.get_lsb (Board.if_w_else chessboard chessboard.wking chessboard.bking) in
-  Bitboard.add_moves_to_list (logand table_move.(n) (lognot ally)) []  
+  Move.add_moves_to_list K n (logand table_move.(n) (lognot ally)) []  
 ;;

@@ -136,7 +136,7 @@ let generate_moves chessboard =
     |_ -> (
       let n = Bitboard.get_lsb board in
       let moves = moves_from_board ally whole n in
-      generate_moves_aux (Bitboard.pop_lsb board) (Bitboard.add_moves_to_list moves acc)
+      generate_moves_aux (Bitboard.pop_lsb board) (Move.add_moves_to_list R n moves acc)
     )
   in
   generate_moves_aux (Board.if_w_else chessboard chessboard.wrooks chessboard.brooks) []

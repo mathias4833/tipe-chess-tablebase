@@ -1,5 +1,6 @@
 open Int64;;
 
+
 (* Colonne et ligne de 1s *)
 let column = 0x101010101010101L;;
 let line = 0xffL;;
@@ -124,12 +125,5 @@ let generate_combinations bitboard =
     |0 -> ((!combination)::acc)
     |_ -> generate_combinations_aux bitboard (x-1) ((!combination)::acc)
   in generate_combinations_aux bitboard (n-1) [] 
-;;
-
-(* Ajoute l'ensemble des coups du bitboard dans la liste des coups possibles *)
-let rec add_moves_to_list bitboard acc = 
-  match bitboard with
-  |0L -> acc
-  |_ -> add_moves_to_list (pop_lsb bitboard) ((isolate_lsb bitboard)::acc)
 ;;
 

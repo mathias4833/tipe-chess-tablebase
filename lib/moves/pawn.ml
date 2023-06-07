@@ -45,12 +45,12 @@ let generate_moves chessboard =
     |_ -> (
       let n = Bitboard.get_lsb board in
       (* Bitboards des coups par prise / sans prise en fonction de la couleur *)
-      let (takeboard, moveboard) =
-        Board.if_w_else chessboard (table_wtake.(n), table_wmove.(n)) (table_btake.(n), table_bmove.(n)) in
+      let takeboard = Board.if_w_else chessboard table_wtake.(n) table_btake.(n) in
+      let moveboard = Board.if_w_else chessboard table_wmove.(n) table_bmove.(n) in
 
       (* Bitboard resultant des coups possibles *)
       let all_moves = logor (logand takeboard enemy) (logand moveboard (lognot whole)) in
-      generate_moves_aux (Bitboard.pop_lsb board) (Bitboard.add_moves_to_list all_moves acc)
+      generate_moves_aux (Bitboard.pop_lsb board) (Move.add_moves_to_list P n all_moves acc)
     )
   in
   generate_moves_aux (Board.if_w_else chessboard chessboard.wpawns chessboard.bpawns) []

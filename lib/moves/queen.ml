@@ -11,9 +11,8 @@ let generate_moves chessboard =
     |0L -> acc
     |_ -> (
       let n = Bitboard.get_lsb board in
-      let moves = logor (Rook.moves_from_board ally whole n) (Bishop.moves_from_board ally whole n) in
-      
-      generate_moves_aux (Bitboard.pop_lsb board) (Bitboard.add_moves_to_list moves acc)
+      let moves = logor (Rook.moves_from_board ally whole n) (Bishop.moves_from_board ally whole n) in 
+      generate_moves_aux (Bitboard.pop_lsb board) (Move.add_moves_to_list Q n moves acc)
     )
   in
   generate_moves_aux (Board.if_w_else chessboard chessboard.wqueen chessboard.bqueen) []
