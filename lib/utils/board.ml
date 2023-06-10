@@ -57,57 +57,90 @@ let study_board = {
 };;
 
 (* Renvoie le bitboard de l'ensemble des pieces enemies *)
-let get_enemy_board chessboard =
-  if chessboard.iswhite then
+let get_enemy_board board =
+  if board.iswhite then
     List.fold_left logor 0L [
-      chessboard.bpawns;
-      chessboard.bknights;
-      chessboard.bbishops;
-      chessboard.brooks;
-      chessboard.bqueen;
-      chessboard.bking
+      board.bpawns;
+      board.bknights;
+      board.bbishops;
+      board.brooks;
+      board.bqueen;
+      board.bking
     ]
   else
     List.fold_left logor 0L [
-      chessboard.wpawns;
-      chessboard.wknights;
-      chessboard.wbishops;
-      chessboard.wrooks;
-      chessboard.wqueen;
-      chessboard.wking
+      board.wpawns;
+      board.wknights;
+      board.wbishops;
+      board.wrooks;
+      board.wqueen;
+      board.wking
     ]
 ;;
 
 (* Renvoie le bitboard de l'ensemble des pieces amies *)
-let get_ally_board chessboard =
-  if chessboard.iswhite then
+let get_ally_board board =
+  if board.iswhite then
     List.fold_left logor 0L [
-      chessboard.wpawns;
-      chessboard.wknights;
-      chessboard.wbishops;
-      chessboard.wrooks;
-      chessboard.wqueen;
-      chessboard.wking
+      board.wpawns;
+      board.wknights;
+      board.wbishops;
+      board.wrooks;
+      board.wqueen;
+      board.wking
     ]
   else
     List.fold_left logor 0L [
-      chessboard.bpawns;
-      chessboard.bknights;
-      chessboard.bbishops;
-      chessboard.brooks;
-      chessboard.bqueen;
-      chessboard.bking
+      board.bpawns;
+      board.bknights;
+      board.bbishops;
+      board.brooks;
+      board.bqueen;
+      board.bking
     ]
 ;;
 
 (* Renvoie le bitboard de l'ensemble des pieces de l'echiquier *)
-let get_whole_board chessboard =
-  logor (get_ally_board chessboard) (get_enemy_board chessboard)
+let get_whole_board board =
+  logor (get_ally_board board) (get_enemy_board board)
 ;;
 
 (* Renvoie *)
-let if_w_else chessboard a b =
-  match chessboard.iswhite with
+let if_w_else board a b =
+  match board.iswhite with
   |true -> a
   |_ -> b
+;;
+
+(* Print l'echiquier complet *)
+let print_board board =
+  let rec print_case i j =
+    let n = Bitboard.index_of_coord i j in
+    match n with
+    |n when (Bitboard.get_nth board.wpawns n) = 1L -> "♟︎" 
+    |n when (Bitboard.get_nth board.wknights n) = 1L -> "♞"
+    |n when (Bitboard.get_nth board.wbishops n) = 1L -> "♝"
+    |n when (Bitboard.get_nth board.wrooks n) = 1L -> "♜"
+    |n when (Bitboard.get_nth board.wqueen n) = 1L -> "♛"
+    |n when (Bitboard.get_nth board.wking n) = 1L -> "♚"
+    |n when (Bitboard.get_nth board.bpawns n) = 1L -> "♙"
+    |n when (Bitboard.get_nth board.bknights n) = 1L -> "♘"
+    |n when (Bitboard.get_nth board.bbishops n) = 1L -> "♗"
+    |n when (Bitboard.get_nth board.brooks n) = 1L -> "♖"
+    |n when (Bitboard.get_nth board.bqueen n) = 1L -> "♕"
+    |n when (Bitboard.get_nth board.bking n) = 1L -> "♔"
+    |_ -> " "
+  (* Print la ligne i de l'echiquier *)
+  and print_line i acc =
+    let rec aux j acc =
+      match j with
+      |j when j > 7 -> acc ^ "|\n"
+      |_ -> aux (j+1) (acc ^ "|" ^ (print_case i j))
+    in aux 0 acc
+  (* Print l'echiquier ligne par ligne *)
+  and print_board_aux i acc =
+    match i with
+    |i when i < 0 -> acc
+    |_ -> print_board_aux (i-1) (print_line i acc)
+  in print_endline (" - - - - - - - -\n" ^ (print_board_aux 7 "") ^ " - - - - - - - -")
 ;;

@@ -24,7 +24,11 @@ in aux l;;
 print_int (Hashtbl.length (Bishop.table_moves.(Bitboard.index_of_coord 2 3)));
 *)
 
-Bitboard.print_list_board (Queen.generate_moves (Board.study_board));;
+(* Board.print_board (Board.study_board);; *)
 
+let study_board_black = {Board.study_board with iswhite = false};;
 
+Move.print_moves (study_board_black) (Rules.generate_moves study_board_black);;
+
+print_int (List.length (Rules.generate_moves study_board_black));;
 
