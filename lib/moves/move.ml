@@ -15,21 +15,22 @@ let rec add_moves_to_list p n bitboard acc =
 (* Joue le coup et renvoie la nouvelle position *)
 let play_move (chessboard: Board.chessboard) move =
   let Chessmove(p, n_from, n_to) = move in
-  (* Echiquier temporaire avec aucune piece sur la case d'arrivee *)
+  (* Echiquier temporaire avec aucune piece sur la case d'arrivee et de depart *)
+  let clear b = Bitboard.clear_nth (Bitboard.clear_nth b n_from) n_to in 
   let tempboard = {
     chessboard with
-    wpawns = Bitboard.clear_nth chessboard.wpawns n_to;
-    wknights = Bitboard.clear_nth chessboard.wknights n_to;
-    wbishops = Bitboard.clear_nth chessboard.wbishops n_to;
-    wrooks = Bitboard.clear_nth chessboard.wrooks n_to;
-    wqueen = Bitboard.clear_nth chessboard.wqueen n_to;
-    wking = Bitboard.clear_nth chessboard.wking n_to;
-    bpawns = Bitboard.clear_nth chessboard.bpawns n_to;
-    bknights = Bitboard.clear_nth chessboard.bknights n_to;
-    bbishops = Bitboard.clear_nth chessboard.bbishops n_to;
-    brooks = Bitboard.clear_nth chessboard.brooks n_to;
-    bqueen = Bitboard.clear_nth chessboard.bqueen n_to;
-    bking = Bitboard.clear_nth chessboard.bking n_to;
+    wpawns = clear chessboard.wpawns;
+    wknights = clear chessboard.wknights;
+    wbishops = clear chessboard.wbishops;
+    wrooks = clear chessboard.wrooks;
+    wqueen = clear chessboard.wqueen;
+    wking = clear chessboard.wking;
+    bpawns = clear chessboard.bpawns;
+    bknights = clear chessboard.bknights;
+    bbishops = clear chessboard.bbishops;
+    brooks = clear chessboard.brooks;
+    bqueen = clear chessboard.bqueen;
+    bking = clear chessboard.bking;
     iswhite = not chessboard.iswhite
   } in
   (* On enleve la piece de la case de depart et on la met sur la case d'arrivee *)

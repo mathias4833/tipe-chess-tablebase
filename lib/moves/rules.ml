@@ -23,7 +23,7 @@ let is_legal_move board move =
 ;;
 
 (* Genere les coups l'ensemble des coups legaux *)
-let generate_moves board =
+let generate_legal_moves board =
   let rec remove_illegal_moves moves acc =
     match moves with
     |[] -> acc
@@ -31,9 +31,9 @@ let generate_moves board =
     |_::t -> remove_illegal_moves t acc
   in
   remove_illegal_moves (King.generate_moves board)
-  (remove_illegal_moves (Queen.generate_moves board)
-  (remove_illegal_moves (Rook.generate_moves board)
-  (remove_illegal_moves (Bishop.generate_moves board)
-  (remove_illegal_moves (Knight.generate_moves board)
-  (remove_illegal_moves (Pawn.generate_moves board) [])))))
+    (remove_illegal_moves (Queen.generate_moves board)
+    (remove_illegal_moves (Rook.generate_moves board)
+    (remove_illegal_moves (Bishop.generate_moves board)
+    (remove_illegal_moves (Knight.generate_moves board)
+    (remove_illegal_moves (Pawn.generate_moves board) [])))))
 ;;
