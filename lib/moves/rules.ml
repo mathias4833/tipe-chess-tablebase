@@ -22,6 +22,9 @@ let is_legal_move board move =
   logand (Board.if_w_else b b.wpawns b.bpawns) (Board.if_w_else b Pawn.table_btake.(n) Pawn.table_wtake.(n)) = 0L
 ;;
 
+(* Verifie si le roi est en echecs *)
+let is_check_move board move = ();; (* TODO *)
+
 (* Genere les coups l'ensemble des coups legaux *)
 let generate_legal_moves board =
   let rec remove_illegal_moves moves acc =

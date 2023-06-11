@@ -14,8 +14,8 @@ type chessboard = {
     bqueen: int64;
     bking: int64;
     iswhite: bool;
-    wrock: bool;
-    brock: bool
+    wcastle: bool;
+    bcastle: bool
 };;
 
 (* Position initiale *)
@@ -33,8 +33,8 @@ let init_board = {
     bqueen = 0x800000000000000L;
     bking = 0x1000000000000000L;
     iswhite = true;
-    wrock = true;
-    brock = true
+    wcastle = true;
+    bcastle = true
 };;
 
 (* Position d'etude *)
@@ -52,8 +52,8 @@ let study_board = {
     bqueen = 0x10000000000L;
     bking = 0x80000000000000L;
     iswhite = true;
-    wrock = false;
-    brock = false
+    wcastle = false;
+    bcastle = false
 };;
 
 (* Renvoie le bitboard de l'ensemble des pieces enemies *)
