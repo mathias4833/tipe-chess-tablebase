@@ -128,8 +128,12 @@ let generate_moves chessboard =
     |_ -> (
       let n = Bitboard.get_lsb board in
       let moves = moves_from_board ally whole n in
-      generate_moves_aux (Bitboard.pop_lsb board) (Move.add_moves_to_list B n moves acc)
+      let acc2 = Move.add_moves_to_list B n moves acc in
+      generate_moves_aux (Bitboard.pop_lsb board) acc2
     )
   in
-  generate_moves_aux (Board.if_w_else chessboard chessboard.wbishops chessboard.bbishops) []
+  if chessboard.iswhite then
+    generate_moves_aux (chessboard.wbishops) []
+  else
+    generate_moves_aux (chessboard.bbishops) []
 ;;

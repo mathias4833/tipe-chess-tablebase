@@ -23,20 +23,7 @@ let is_legal_move board move =
 ;;
 
 (* Verifie si le roi est en echecs *)
-let is_check_move board move = ();; (* TODO *)
-
-(* Genere les coups l'ensemble des coups legaux *)
-let generate_legal_moves board =
-  let rec remove_illegal_moves moves acc =
-    match moves with
-    |[] -> acc
-    |h::t when is_legal_move board h -> remove_illegal_moves t (h::acc)
-    |_::t -> remove_illegal_moves t acc
-  in
-  remove_illegal_moves (King.generate_moves board)
-    (remove_illegal_moves (Queen.generate_moves board)
-    (remove_illegal_moves (Rook.generate_moves board)
-    (remove_illegal_moves (Bishop.generate_moves board)
-    (remove_illegal_moves (Knight.generate_moves board)
-    (remove_illegal_moves (Pawn.generate_moves board) [])))))
+let is_check_move (board: Board.chessboard) move =
+  (* On regarde si l'adversaire peut attaquer le roi *)
+  is_legal_move ({board with iswhite = not board.iswhite}) move
 ;;

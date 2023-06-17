@@ -17,7 +17,7 @@ let coord_of_index n =
 
 (* Renvoie la valeur du nth bit *)
 let get_nth x n =
-    logand (shift_right x n) 1L  
+    logand (shift_right x n) 1L
 ;;
 
 (* Change la valeur du nth bit par un 1 *)
