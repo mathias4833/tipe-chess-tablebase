@@ -36,7 +36,7 @@ let get_move_board iswhite whole n =
     match iswhite with
     |true -> (
       let defaultmove = table_wmove.(n) in
-      (* Verifie si le pion peut avancer de deux cases *)
+      (* Verifie si le pion blanc peut avancer de deux cases *)
       if 7 < n && n < 16 && (logand defaultmove whole = 0L) then
         logor defaultmove table_wmove.(n+8)
       else
@@ -44,6 +44,7 @@ let get_move_board iswhite whole n =
     )
     |_ -> (
       let defaultmove = table_bmove.(n) in
+      (* Verifie si le pion noir peut avancer de deux cases *)
       if 47 < n && n < 56 && (logand defaultmove whole = 0L) then
         logor defaultmove table_bmove.(n-8)
       else
