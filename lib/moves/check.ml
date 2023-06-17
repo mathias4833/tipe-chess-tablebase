@@ -21,9 +21,3 @@ let is_legal_move board move =
   (* Aucun pion n'attaque le roi *) 
   logand (Board.if_w_else b b.wpawns b.bpawns) (Board.if_w_else b Pawn.table_btake.(n) Pawn.table_wtake.(n)) = 0L
 ;;
-
-(* Verifie si le roi est en echecs *)
-let is_check_move (board: Board.chessboard) move =
-  (* On regarde si l'adversaire peut attaquer le roi *)
-  is_legal_move ({board with iswhite = not board.iswhite}) move
-;;

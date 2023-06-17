@@ -18,7 +18,24 @@ let generate_legal_moves board =
     (remove_illegal_moves (Castling.generate_moves board) []))))))
 ;;
 
-Move.print_moves (Board.study_board) (generate_legal_moves Board.study_board);;
+let (board: Board.chessboard) = {
+    wpawns = 0L;
+    wknights = 0L;
+    wbishops = 0L;
+    wrooks = 0x81L;
+    wqueen = 0L;
+    wking = 0x10L;
+    bpawns = 0L;
+    bknights = 0L;
+    bbishops = 0L;
+    brooks = 0x4000000000000000L;
+    bqueen = 0L;
+    bking = 0x1000000000000000L;
+    iswhite = true;
+    wcastle = true;
+    bcastle = true
+};;
 
-print_int (List.length (generate_legal_moves Board.study_board));;
+
+Move.print_moves (board) (generate_legal_moves board);;
 
