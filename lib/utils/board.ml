@@ -105,7 +105,7 @@ let get_whole_board board =
   logor (get_ally_board board) (get_enemy_board board)
 ;;
 
-(* Renvoie *)
+(* Renvoie a si c'est au blanc de jouer, b sinon *)
 let if_w_else board a b =
   match board.iswhite with
   |true -> a
