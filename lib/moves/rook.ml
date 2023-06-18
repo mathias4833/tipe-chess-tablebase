@@ -91,8 +91,6 @@ let generate_blockers i j =
   !blockers_list
 ;;
 
-
-(* TODO: Commenter ! *)
 (* Creation d'un tableau de dictionnaires contenant positions accessible *)
 let table_moves =
   (* Cree le dictionnaire bloqueurs / cases accessibles *)
@@ -101,6 +99,7 @@ let table_moves =
     let all_blockers = generate_blockers i j in (* Ensemble des bloqueurs *)
     let hashmap = Hashtbl.create 1024 in (* Dictionnaire vide *)
 
+    (* A chaque bloqueur on associe le bitboard des cases accesibles *)
     let rec aux1 l accessible hashmap =
       match l with
       |[] -> hashmap
@@ -134,6 +133,7 @@ let generate_moves chessboard =
     match board with
     |0L -> acc
     |_ -> (
+      (* Indice de la tour *)
       let n = Bitboard.get_lsb board in
       let moves = moves_from_board ally whole n in
       generate_moves_aux (Bitboard.pop_lsb board) (Move.add_moves_to_list R n moves acc)

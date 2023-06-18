@@ -1,6 +1,7 @@
 open Int64;;
 open Utils;;
 
+(* Genere le masque d'un fou en i j *)
 let generate_mask  i j =
 	let pos = 1L in
 	let mask = ref 0L in
@@ -17,7 +18,7 @@ let generate_mask  i j =
 	!mask
 ;;
 
-(* Cree la table des masques (tableau de generate_mask i j) *)
+(* Cree le tableau des masques pour toutes les positions possibles *)
 let table_mask =
   let create_table_mask n =
     let (i, j) = Bitboard.coord_of_index n in
@@ -26,6 +27,7 @@ let table_mask =
 ;;
 
 
+(* Fonction auxiliaire qui ajoute tous les bloqueurs derrieres ceux donne en entree *)
 let generate_blockers_from_nearest i j dhd dhg dbd dbg =
   let blockers = ref 0L in
   for n = dhg+1 to 6 do
@@ -48,17 +50,17 @@ let generate_blockers i j =
   let mask = table_mask.(Bitboard.index_of_coord i j) in
   let blockers_list = ref [] in
 
-
+  (* Si on n'est pas sur un bord on peut eviter de compter les cases au bord comme des bloqueurs *)
   let borderline_down = if i=0 then 1 else 0 in
   let borderline_up = if i=7 then 1 else 0 in
   let bordercolumn_left = if j=0 then 1 else 0 in
   let bordercolumn_right = if j=7 then 1 else 0 in
-  
+
   for dhg = 1 to (Int.min (7-i+borderline_up) (j+bordercolumn_left)) do 
     for dhd = 1 to (Int.min (7-i+borderline_up) (7-j+bordercolumn_right)) do
       for dbg = 1 to (Int.min (i+borderline_down) (j+bordercolumn_left)) do
         for dbd = 1 to (Int.min (i+borderline_down) (7-j+bordercolumn_right)) do
-        
+          
           let nearest_blockers = List.fold_left logor 0L [
             Bitboard.from_coordinate (i+dhd) (j+dhd);
             Bitboard.from_coordinate (i+dhg) (j-dhg);
@@ -75,7 +77,7 @@ let generate_blockers i j =
               |h::t -> aux t ((logand mask (logor h nearest_blockers))::acc)
             in aux (Bitboard.generate_combinations full_blockers) []
           in
-          
+          (* Ajout a l'ensemble de la liste des bloqueurs *)
           blockers_list := (accessible_mask, blockers)::!blockers_list
         done;
       done;
@@ -85,8 +87,6 @@ let generate_blockers i j =
   !blockers_list
 ;;
 
-
-(* TODO: Commenter ! *)
 (* Creation d'un tableau de dictionnaires contenant positions accessible *)
 let table_moves =
   (* Cree le dictionnaire bloqueurs / cases accessibles *)
@@ -95,6 +95,7 @@ let table_moves =
     let all_blockers = generate_blockers i j in (* Ensemble des bloqueurs *)
     let hashmap = Hashtbl.create 1024 in (* Dictionnaire vide *)
 
+    (* A chaque bloqueur on associe le bitboard des cases accesibles *)
     let rec aux1 l accessible hashmap =
       match l with
       |[] -> hashmap
@@ -121,15 +122,16 @@ let moves_from_board ally whole n =
 let generate_moves chessboard =
   let ally = Board.get_ally_board chessboard in
   let whole = Board.get_whole_board chessboard in
-  
+
+  (* Fonction auxiliaire pour parcourir l'ensemble des fous *)
   let rec generate_moves_aux board acc =
     match board with
     |0L -> acc
     |_ -> (
+      (* Indice du fou *)
       let n = Bitboard.get_lsb board in
       let moves = moves_from_board ally whole n in
-      let acc2 = Move.add_moves_to_list B n moves acc in
-      generate_moves_aux (Bitboard.pop_lsb board) acc2
+      generate_moves_aux (Bitboard.pop_lsb board) (Move.add_moves_to_list B n moves acc ) 
     )
   in
   if chessboard.iswhite then

@@ -10,6 +10,7 @@ let generate_moves chessboard =
     match board with
     |0L -> acc
     |_ -> (
+      (* Indice de la dame *)
       let n = Bitboard.get_lsb board in
       let moves = logor (Rook.moves_from_board ally whole n) (Bishop.moves_from_board ally whole n) in 
       generate_moves_aux (Bitboard.pop_lsb board) (Move.add_moves_to_list Q n moves acc)

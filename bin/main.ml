@@ -1,6 +1,11 @@
-open Utils;;
 open Solver;;
+open Utils;;
 
-let (n, b) = (Minimax.minimax ({Board.study_board with iswhite = true}) 1) in
-print_endline (string_of_int n);
-Board.print_board b;;
+let measure_time board depth =
+  let t = Sys.time() in
+  let (_, b) = (Minimax.minimax board depth) in
+  Printf.printf "Execution time: %fs\n" (Sys.time() -. t);
+  Board.print_board b;
+;;
+
+measure_time Minimax.mat_in_1 1;;

@@ -30,18 +30,12 @@ let clear_nth x n =
     logand x (lognot (shift_left 1L n))
 ;;
 
-(* Renvoie le bitboard en echangeant la valeur du lsb *)
-(* LS-Bit-Reset *)
+(* Renvoie le bitboard en echangeant la valeur du bit de poids faible *)
 let pop_lsb x =
    logand x (sub x 1L)
 ;;
 
-(* Voir: LS-Bit-Isolation *)
-let isolate_lsb x =
-  logand x (neg x)
-;;
-
-(* Renvoie l'indice du lsb, commence a 0 *)
+(* Renvoie l'indice du bit de poids faible, commence a 0 *)
 let get_lsb x =
   let rec get_lsb_aux x acc =
     match logand x 1L with

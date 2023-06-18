@@ -62,6 +62,7 @@ let generate_moves chessboard =
     match board with
     |0L -> acc
     |_ -> (
+      (* Indice du pion *)
       let n = Bitboard.get_lsb board in
       (* Bitboards des coups par prise / sans prise en fonction de la couleur *)
       let takeboard = Board.if_w_else chessboard table_wtake.(n) table_btake.(n) in

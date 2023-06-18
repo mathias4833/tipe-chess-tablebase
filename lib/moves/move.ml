@@ -1,9 +1,9 @@
 open Utils;;
 
+(* Notation internationale des pieces *)
 type piece = P | B | N | R | Q | K;;
 (* Piece qui bouge / case de depart / case d'arrivee *)
 type chessmove = Chessmove of piece * int * int | ShortCastling | LongCastling;;
-
 
 (* Ajoute l'ensemble des coups du bitboard dans la liste des coups possibles *)
 let rec add_moves_to_list p n bitboard acc = 
@@ -15,28 +15,28 @@ let rec add_moves_to_list p n bitboard acc =
 (* Joue le coup et renvoie la nouvelle position *)
 let play_move (chessboard: Board.chessboard) move =
   match (move, chessboard.iswhite) with
-  |(ShortCastling, true) -> {
+|(ShortCastling, true) -> {  (* Petit roque blanc *)
       chessboard with
       wking = (Bitboard.set_nth 0L 6);
       wrooks = (Bitboard.set_nth (Bitboard.clear_nth chessboard.wrooks 7) 5);
       iswhite = false;
       wcastle = false
     }
-  |(ShortCastling, false) -> {
+  |(ShortCastling, false) -> {  (*Petit roque noir *)
       chessboard with
       bking = (Bitboard.set_nth 0L 62);
       brooks = (Bitboard.set_nth (Bitboard.clear_nth chessboard.wrooks 63) 61);
       iswhite = true;
       bcastle = false
     }
-  |(LongCastling, true) -> {
+  |(LongCastling, true) -> {  (* Grand roque blanc*)
       chessboard with
       wking = (Bitboard.set_nth 0L 2);
       wrooks = (Bitboard.set_nth (Bitboard.clear_nth chessboard.wrooks 0) 3);
       iswhite = false;
       wcastle = false
     }
-  |(LongCastling, false) -> {
+  |(LongCastling, false) -> {  (* Grand roque noir *)
       chessboard with
       bking = (Bitboard.set_nth 0L 58);
       brooks = (Bitboard.set_nth (Bitboard.clear_nth chessboard.wrooks 56) 59);
@@ -44,7 +44,7 @@ let play_move (chessboard: Board.chessboard) move =
       bcastle = false
     }
   |(Chessmove(p, n_from, n_to), _) -> (
-    (* Echiquier temporaire avec aucune piece sur la case d'arrivee et de depart *)
+    (* Echiquier temporaire sans aucune piece sur la case d'arrivee et de depart *)
     let clear b = Bitboard.clear_nth (Bitboard.clear_nth b n_from) n_to in 
     let tempboard = {
       chessboard with

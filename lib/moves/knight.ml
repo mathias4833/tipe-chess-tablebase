@@ -26,6 +26,7 @@ let generate_moves chessboard =
     match board with
     |0L -> acc
     |_ -> (
+      (* Indice du cavalier *)
       let n = Bitboard.get_lsb board in
       let all_moves = logand table_move.(n) (lognot ally) in
       generate_moves_aux (Bitboard.pop_lsb board) (Move.add_moves_to_list N n all_moves acc)

@@ -28,7 +28,7 @@ let generate_moves (chessboard: Board.chessboard) =
         (Move.LongCastling::castling_moves)
       else
         castling_moves
-    ) else []
+    ) else [] (* Le roi a deja joue, pas de roque possible *)
   else (
     (* Le roi n'a pas encore bouge *)
     if chessboard.bcastle then (
@@ -55,6 +55,6 @@ let generate_moves (chessboard: Board.chessboard) =
         (Move.LongCastling::castling_moves)
       else
         castling_moves
-    ) else []
+    ) else [] (* Le roi a deja joue, pas de roque possible *)
   )
 ;;
