@@ -27,5 +27,4 @@ let generate_moves chessboard =
     Bitboard.get_lsb
       (Board.if_w_else chessboard chessboard.wking chessboard.bking)
   in
-
   Move.add_moves_to_list K n (logand table_move.(n) (lognot ally)) []

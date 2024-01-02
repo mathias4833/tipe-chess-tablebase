@@ -18,7 +18,7 @@ type chessboard = {
   bcastle : bool;
 }
 
-type piece =
+type chesspiece =
   | WPawn
   | WKnight
   | WBishop
@@ -31,6 +31,8 @@ type piece =
   | BRook
   | BQueen
   | BKing
+
+type chesspieces = chesspiece list
 
 (* Position initiale *)
 let init_board =
@@ -47,6 +49,26 @@ let init_board =
     brooks = 0x8100000000000000L;
     bqueen = 0x800000000000000L;
     bking = 0x1000000000000000L;
+    iswhite = true;
+    wcastle = true;
+    bcastle = true;
+  }
+
+(* Position vide *)
+let empty_board =
+  {
+    wpawns = 0L;
+    wknights = 0L;
+    wbishops = 0L;
+    wrooks = 0L;
+    wqueen = 0L;
+    wking = 0L;
+    bpawns = 0L;
+    bknights = 0L;
+    bbishops = 0L;
+    brooks = 0L;
+    bqueen = 0L;
+    bking = 0L;
     iswhite = true;
     wcastle = true;
     bcastle = true;
@@ -158,3 +180,33 @@ let print_board board =
   in
   print_endline
     (" - - - - - - - -\n" ^ print_board_aux 7 "" ^ " - - - - - - - -")
+
+(* Bitboard associé a la pice *)
+let piece_to_bitboard board = function
+  | WPawn -> board.wpawns
+  | WKnight -> board.wknights
+  | WBishop -> board.wbishops
+  | WRrook -> board.wrooks
+  | WQueen -> board.wqueen
+  | WKing -> board.wking
+  | BPawn -> board.bpawns
+  | BKnight -> board.bknights
+  | BBishop -> board.bbishops
+  | BRook -> board.brooks
+  | BQueen -> board.bqueen
+  | BKing -> board.bking
+
+(* Modifie le bitboard associé à la piece p *)
+let update_board board b = function
+  | WPawn -> { board with wpawns = b }
+  | WKnight -> { board with wknights = b }
+  | WBishop -> { board with wbishops = b }
+  | WRrook -> { board with wrooks = b }
+  | WQueen -> { board with wqueen = b }
+  | WKing -> { board with wking = b }
+  | BPawn -> { board with bpawns = b }
+  | BKnight -> { board with bknights = b }
+  | BBishop -> { board with bbishops = b }
+  | BRook -> { board with brooks = b }
+  | BQueen -> { board with bqueen = b }
+  | BKing -> { board with bking = b }
