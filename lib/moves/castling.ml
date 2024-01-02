@@ -1,60 +1,61 @@
-open Utils;;
+open Utils
 
 (* Genere les coups de roque si possible *)
-let generate_moves (chessboard: Board.chessboard) =
+let generate_moves (chessboard : Board.chessboard) =
   if chessboard.iswhite then
     (* Le roi n'a pas encore bouge *)
-    if chessboard.wcastle then (
+    if chessboard.wcastle then
       let whole = Board.get_whole_board chessboard in
       (* Verifie que la tour est a sa place et qu'aucune piece ne bloque et que le roi ne se met pas en echecs *)
       let castling_moves =
         (* Petit roque *)
-        if (Bitboard.get_nth chessboard.wrooks 7) = 1L
-          && (Bitboard.get_nth whole 5) = 0L
-          && (Bitboard.get_nth whole 6) = 0L
-          && (Check.is_legal_move chessboard (Move.Chessmove(K, 4, 4)))
-          && (Check.is_legal_move chessboard (Move.Chessmove(K, 4, 5)))
-          && (Check.is_legal_move chessboard (Move.Chessmove(K, 4, 6)))
-        then [Move.ShortCastling] else [] in
+        if
+          Bitboard.get_nth chessboard.wrooks 7 = 1L
+          && Bitboard.get_nth whole 5 = 0L
+          && Bitboard.get_nth whole 6 = 0L
+          && Check.is_legal_move chessboard (Move.Chessmove (K, 4, 4))
+          && Check.is_legal_move chessboard (Move.Chessmove (K, 4, 5))
+          && Check.is_legal_move chessboard (Move.Chessmove (K, 4, 6))
+        then [ Move.ShortCastling ]
+        else []
+      in
       (* Grand roque *)
-      if (Bitboard.get_nth chessboard.wrooks 0) = 1L
-        && (Bitboard.get_nth whole 1) = 0L
-        && (Bitboard.get_nth whole 2) = 0L
-        && (Bitboard.get_nth whole 3) = 0L
-        && (Check.is_legal_move chessboard (Move.Chessmove(K, 4, 4)))
-        && (Check.is_legal_move chessboard (Move.Chessmove(K, 4, 3)))
-        && (Check.is_legal_move chessboard (Move.Chessmove(K, 4, 2)))
-      then
-        (Move.LongCastling::castling_moves)
-      else
-        castling_moves
-    ) else [] (* Le roi a deja joue, pas de roque possible *)
-  else (
-    (* Le roi n'a pas encore bouge *)
-    if chessboard.bcastle then (
-      let whole = Board.get_whole_board chessboard in
-      (* Verifie que la tour est a sa place et qu'aucune piece ne bloque et que le roi ne se met pas en echecs *)
-      let castling_moves =
-        (* Petit roque *)
-        if (Bitboard.get_nth chessboard.brooks 63) = 1L
-          && (Bitboard.get_nth whole 61) = 0L
-          && (Bitboard.get_nth whole 62) = 0L
-          && (Check.is_legal_move chessboard (Move.Chessmove(K, 60, 60)))
-          && (Check.is_legal_move chessboard (Move.Chessmove(K, 60, 61)))
-          && (Check.is_legal_move chessboard (Move.Chessmove(K, 60, 62)))
-        then [Move.ShortCastling] else [] in
-      (* Grand roque *)
-      if (Bitboard.get_nth chessboard.wrooks 56) = 1L
-        && (Bitboard.get_nth whole 57) = 0L
-        && (Bitboard.get_nth whole 58) = 0L
-        && (Bitboard.get_nth whole 59) = 0L
-        && (Check.is_legal_move chessboard (Move.Chessmove(K, 60, 60)))
-        && (Check.is_legal_move chessboard (Move.Chessmove(K, 60, 59)))
-        && (Check.is_legal_move chessboard (Move.Chessmove(K, 60, 58)))
-      then
-        (Move.LongCastling::castling_moves)
-      else
-        castling_moves
-    ) else [] (* Le roi a deja joue, pas de roque possible *)
-  )
-;;
+      if
+        Bitboard.get_nth chessboard.wrooks 0 = 1L
+        && Bitboard.get_nth whole 1 = 0L
+        && Bitboard.get_nth whole 2 = 0L
+        && Bitboard.get_nth whole 3 = 0L
+        && Check.is_legal_move chessboard (Move.Chessmove (K, 4, 4))
+        && Check.is_legal_move chessboard (Move.Chessmove (K, 4, 3))
+        && Check.is_legal_move chessboard (Move.Chessmove (K, 4, 2))
+      then Move.LongCastling :: castling_moves
+      else castling_moves
+    else [] (* Le roi a deja joue, pas de roque possible *)
+  else if (* Le roi n'a pas encore bouge *)
+          chessboard.bcastle then
+    let whole = Board.get_whole_board chessboard in
+    (* Verifie que la tour est a sa place et qu'aucune piece ne bloque et que le roi ne se met pas en echecs *)
+    let castling_moves =
+      (* Petit roque *)
+      if
+        Bitboard.get_nth chessboard.brooks 63 = 1L
+        && Bitboard.get_nth whole 61 = 0L
+        && Bitboard.get_nth whole 62 = 0L
+        && Check.is_legal_move chessboard (Move.Chessmove (K, 60, 60))
+        && Check.is_legal_move chessboard (Move.Chessmove (K, 60, 61))
+        && Check.is_legal_move chessboard (Move.Chessmove (K, 60, 62))
+      then [ Move.ShortCastling ]
+      else []
+    in
+    (* Grand roque *)
+    if
+      Bitboard.get_nth chessboard.wrooks 56 = 1L
+      && Bitboard.get_nth whole 57 = 0L
+      && Bitboard.get_nth whole 58 = 0L
+      && Bitboard.get_nth whole 59 = 0L
+      && Check.is_legal_move chessboard (Move.Chessmove (K, 60, 60))
+      && Check.is_legal_move chessboard (Move.Chessmove (K, 60, 59))
+      && Check.is_legal_move chessboard (Move.Chessmove (K, 60, 58))
+    then Move.LongCastling :: castling_moves
+    else castling_moves
+  else [] (* Le roi a deja joue, pas de roque possible *)
