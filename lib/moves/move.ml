@@ -1,6 +1,6 @@
 open Utils
 
-(* Notation internationale des pieces *)
+(* Notation internationale des pieces, sans la couleur associé *)
 type piece = P | B | N | R | Q | K
 
 (* Piece qui bouge / case de depart / case d'arrivee *)

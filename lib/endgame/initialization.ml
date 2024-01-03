@@ -1,3 +1,4 @@
+(*
 open Moves
 open Utils
 
@@ -24,3 +25,4 @@ let generate_all_pos (p : Board.chesspieces) =
 (* Ne conserve que les positions qui sont actuellement des mats *)
 let generate_all_mates (p : Board.chesspieces) =
   List.filter (fun board -> Check.is_check board) (generate_all_pos p)
+*)

@@ -18,7 +18,8 @@ type chessboard = {
   bcastle : bool;
 }
 
-type chesspiece =
+(* Pieces avec la couleur associé *)
+type piece =
   | WPawn
   | WKnight
   | WBishop
@@ -31,8 +32,6 @@ type chesspiece =
   | BRook
   | BQueen
   | BKing
-
-type chesspieces = chesspiece list
 
 (* Position initiale *)
 let init_board =
@@ -55,7 +54,7 @@ let init_board =
   }
 
 (* Position vide *)
-let empty_board =
+let empty_board iswhite =
   {
     wpawns = 0L;
     wknights = 0L;
@@ -69,7 +68,7 @@ let empty_board =
     brooks = 0L;
     bqueen = 0L;
     bking = 0L;
-    iswhite = true;
+    iswhite;
     wcastle = true;
     bcastle = true;
   }
@@ -210,3 +209,16 @@ let update_board board b = function
   | BRook -> { board with brooks = b }
   | BQueen -> { board with bqueen = b }
   | BKing -> { board with bking = b }
+
+(* Renvoie l'ensemble des positions possibles en ajoutant une piece précise *)
+let add_piece board piece =
+  let rec aux board piece acc = function
+    | i when i > 63 -> List.map (fun b -> update_board board b piece) acc
+    | i when Bitboard.get_nth (get_whole_board board) i = 1L ->
+        aux board piece acc (i + 1)
+    | i ->
+        aux board piece
+          (Bitboard.set_nth (piece_to_bitboard board piece) i :: acc)
+          (i + 1)
+  in
+  aux board piece [] 0
