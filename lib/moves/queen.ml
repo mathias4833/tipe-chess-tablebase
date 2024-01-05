@@ -23,3 +23,21 @@ let generate_moves chessboard =
   generate_moves_aux
     (Board.if_w_else chessboard chessboard.wqueen chessboard.bqueen)
     []
+
+let generate_unmoves chessboard =
+  let whole = Board.get_whole_board chessboard in
+  let rec generate_unmoves_aux acc = function
+    | 0L -> acc
+    | b ->
+        let n = Bitboard.get_lsb b in
+        let moves =
+          logor
+            (Rook.unmoves_from_board whole n)
+            (Bishop.unmoves_from_board whole n)
+        in
+        generate_unmoves_aux
+          (Move.add_unmoves_to_list Q n acc moves)
+          (Bitboard.pop_lsb b)
+  in
+  generate_unmoves_aux []
+    (Board.if_w_else chessboard chessboard.wqueen chessboard.bqueen)

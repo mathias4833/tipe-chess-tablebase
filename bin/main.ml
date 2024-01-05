@@ -13,20 +13,21 @@ let measure_time board depth =
 measure_time Minimax.mat_in_1 1
 *)
 
-let _table = Endgame.Table_rook.generate_table 2 in
-let _pos =
-  {
-    (Utils.Board.empty_board true) with
-    wking = 0x40000000000L;
-    bking = 0x10000000000L;
-    wrooks = 0x400000000000000L;
-  }
-in
-(* Printfwprintf "%b" (Hashtbl.mem _table _pos) *)
+let _n = 33 in
+let _table = Endgame.Table_rook.generate_table _n in
+
+(* Printf.printf "%b" (Hashtbl.mem _table _pos); *)
 Hashtbl.iter
-  (fun b (Endgame.Table_rook.Win (_, n)) ->
-    if n = 2 then Utils.Board.print_board b)
-  _table
+  (fun b e ->
+    match e with
+    | Endgame.Table_rook.Win (Utils.Board.Chessmove (_, f, t), n) ->
+        if n = _n then (
+          Utils.Board.print_board b;
+          Printf.printf "%i %i\n" f t)
+    | _ -> ())
+  _table;
+Printf.printf "%i" (Hashtbl.length _table)
+
 (* List.iter *)
 (* (fun b -> Utils.Board.print_board b) *)
 (* (Endgame.Table_rook.generate_mates ()) *)

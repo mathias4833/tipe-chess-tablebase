@@ -18,20 +18,14 @@ type chessboard = {
   bcastle : bool;
 }
 
-(* Pieces avec la couleur associé *)
-type piece =
-  | WPawn
-  | WKnight
-  | WBishop
-  | WRrook
-  | WQueen
-  | WKing
-  | BPawn
-  | BKnight
-  | BBishop
-  | BRook
-  | BQueen
-  | BKing
+(* Notation internationale des pieces, sans la couleur associé *)
+type chesspiece = P | B | N | R | Q | K
+
+(* Piece qui bouge / case de depart / case d'arrivee *)
+type chessmove =
+  | Chessmove of chesspiece * int * int
+  | ShortCastling
+  | LongCastling
 
 (* Position initiale *)
 let init_board =
@@ -54,7 +48,7 @@ let init_board =
   }
 
 (* Position vide *)
-let empty_board iswhite =
+let empty_board =
   {
     wpawns = 0L;
     wknights = 0L;
@@ -68,9 +62,9 @@ let empty_board iswhite =
     brooks = 0L;
     bqueen = 0L;
     bking = 0L;
-    iswhite;
-    wcastle = true;
-    bcastle = true;
+    iswhite = true;
+    wcastle = false;
+    bcastle = false;
   }
 
 (* Position d'etude *)
@@ -93,57 +87,38 @@ let study_board =
     bcastle = false;
   }
 
-(* Renvoie le bitboard de l'ensemble des pieces enemies *)
-let get_enemy_board board =
-  if board.iswhite then
-    List.fold_left logor 0L
-      [
-        board.bpawns;
-        board.bknights;
-        board.bbishops;
-        board.brooks;
-        board.bqueen;
-        board.bking;
-      ]
-  else
-    List.fold_left logor 0L
-      [
-        board.wpawns;
-        board.wknights;
-        board.wbishops;
-        board.wrooks;
-        board.wqueen;
-        board.wking;
-      ]
+(* Renvoie a si c'est au blanc de jouer, b sinon *)
+let if_w_else board a b = match board.iswhite with true -> a | _ -> b
+
+(* Change le trait *)
+let change_turn board = { board with iswhite = not board.iswhite }
+
+(* Renvoie le bitboard associé à la piece *)
+let get_bitboard board = function
+  | P -> if_w_else board board.wpawns board.bpawns
+  | B -> if_w_else board board.wbishops board.bbishops
+  | N -> if_w_else board board.wknights board.bknights
+  | R -> if_w_else board board.wrooks board.brooks
+  | Q -> if_w_else board board.wqueen board.bqueen
+  | K -> if_w_else board board.wking board.bking
 
 (* Renvoie le bitboard de l'ensemble des pieces amies *)
 let get_ally_board board =
-  if board.iswhite then
-    List.fold_left logor 0L
-      [
-        board.wpawns;
-        board.wknights;
-        board.wbishops;
-        board.wrooks;
-        board.wqueen;
-        board.wking;
-      ]
-  else
-    List.fold_left logor 0L
-      [
-        board.bpawns;
-        board.bknights;
-        board.bbishops;
-        board.brooks;
-        board.bqueen;
-        board.bking;
-      ]
+  List.fold_left logor 0L
+    [
+      get_bitboard board P;
+      get_bitboard board K;
+      get_bitboard board N;
+      get_bitboard board R;
+      get_bitboard board Q;
+      get_bitboard board K;
+    ]
+
+(* Renvoie le bitboard de l'ensemble des pieces ennemies *)
+let get_enemy_board board = get_ally_board (change_turn board)
 
 (* Renvoie le bitboard de l'ensemble des pieces de l'echiquier *)
 let get_whole_board board = logor (get_ally_board board) (get_enemy_board board)
-
-(* Renvoie a si c'est au blanc de jouer, b sinon *)
-let if_w_else board a b = match board.iswhite with true -> a | _ -> b
 
 (* Print l'echiquier complet *)
 let print_board board =
@@ -180,35 +155,44 @@ let print_board board =
   print_endline
     (" - - - - - - - -\n" ^ print_board_aux 7 "" ^ " - - - - - - - -")
 
-(* Bitboard associé a la pice *)
-let piece_to_bitboard board = function
-  | WPawn -> board.wpawns
-  | WKnight -> board.wknights
-  | WBishop -> board.wbishops
-  | WRrook -> board.wrooks
-  | WQueen -> board.wqueen
-  | WKing -> board.wking
-  | BPawn -> board.bpawns
-  | BKnight -> board.bknights
-  | BBishop -> board.bbishops
-  | BRook -> board.brooks
-  | BQueen -> board.bqueen
-  | BKing -> board.bking
-
 (* Modifie le bitboard associé à la piece p *)
 let update_board board b = function
-  | WPawn -> { board with wpawns = b }
-  | WKnight -> { board with wknights = b }
-  | WBishop -> { board with wbishops = b }
-  | WRrook -> { board with wrooks = b }
-  | WQueen -> { board with wqueen = b }
-  | WKing -> { board with wking = b }
-  | BPawn -> { board with bpawns = b }
-  | BKnight -> { board with bknights = b }
-  | BBishop -> { board with bbishops = b }
-  | BRook -> { board with brooks = b }
-  | BQueen -> { board with bqueen = b }
-  | BKing -> { board with bking = b }
+  | P ->
+      {
+        board with
+        wpawns = if_w_else board b board.wpawns;
+        bpawns = if_w_else board board.bpawns b;
+      }
+  | B ->
+      {
+        board with
+        wbishops = if_w_else board b board.wbishops;
+        bbishops = if_w_else board board.bbishops b;
+      }
+  | N ->
+      {
+        board with
+        wknights = if_w_else board b board.wknights;
+        bknights = if_w_else board board.bknights b;
+      }
+  | R ->
+      {
+        board with
+        wrooks = if_w_else board b board.wrooks;
+        brooks = if_w_else board board.brooks b;
+      }
+  | Q ->
+      {
+        board with
+        wqueen = if_w_else board b board.wqueen;
+        bqueen = if_w_else board board.bqueen b;
+      }
+  | K ->
+      {
+        board with
+        wking = if_w_else board b board.wking;
+        bking = if_w_else board board.bking b;
+      }
 
 (* Renvoie l'ensemble des positions possibles en ajoutant une piece précise *)
 let add_piece board piece =
@@ -218,7 +202,7 @@ let add_piece board piece =
         aux board piece acc (i + 1)
     | i ->
         aux board piece
-          (Bitboard.set_nth (piece_to_bitboard board piece) i :: acc)
+          (Bitboard.set_nth (get_bitboard board piece) i :: acc)
           (i + 1)
   in
   aux board piece [] 0

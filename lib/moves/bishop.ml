@@ -150,3 +150,25 @@ let generate_moves chessboard =
   in
   if chessboard.iswhite then generate_moves_aux chessboard.wbishops []
   else generate_moves_aux chessboard.bbishops []
+
+(* Genere l'ensemble des coups ayant pu etre joué avant *)
+let unmoves_from_board whole n =
+  let blockerboard = logand whole table_mask.(n) in
+  logand (Hashtbl.find table_moves.(n) blockerboard) (lognot whole)
+
+let generate_unmoves chessboard =
+  let ally = Board.get_ally_board chessboard in
+  let whole = Board.get_whole_board chessboard in
+
+  let rec generate_unmoves_aux acc = function
+    | 0L -> acc
+    | b ->
+        let n = Bitboard.get_lsb b in
+        let moves = moves_from_board ally whole n in
+        generate_unmoves_aux
+          (Move.add_unmoves_to_list B n acc moves)
+          (Bitboard.pop_lsb b)
+  in
+  Board.if_w_else chessboard
+    (generate_unmoves_aux [] chessboard.wbishops)
+    (generate_unmoves_aux [] chessboard.bbishops)

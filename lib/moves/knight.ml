@@ -36,3 +36,17 @@ let generate_moves chessboard =
   generate_moves_aux
     (Board.if_w_else chessboard chessboard.wknights chessboard.bknights)
     []
+
+let generate_unmoves chessboard =
+  let whole = Board.get_ally_board chessboard in
+  let rec generate_unmoves_aux acc = function
+    | 0L -> acc
+    | b ->
+        let n = Bitboard.get_lsb b in
+        let all_unmoves = logand table_move.(n) (lognot whole) in
+        generate_unmoves_aux
+          (Move.add_unmoves_to_list N n acc all_unmoves)
+          (Bitboard.pop_lsb b)
+  in
+  generate_unmoves_aux []
+    (Board.if_w_else chessboard chessboard.wknights chessboard.bknights)

@@ -28,3 +28,8 @@ let generate_moves chessboard =
       (Board.if_w_else chessboard chessboard.wking chessboard.bking)
   in
   Move.add_moves_to_list K n (logand table_move.(n) (lognot ally)) []
+
+let generate_unmoves chessboard =
+  let whole = Board.get_whole_board chessboard in
+  let n = Bitboard.get_lsb (Board.get_bitboard chessboard Board.K) in
+  Move.add_unmoves_to_list K n [] (logand table_move.(n) (lognot whole))

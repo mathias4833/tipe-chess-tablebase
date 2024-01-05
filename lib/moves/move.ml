@@ -1,11 +1,5 @@
 open Utils
 
-(* Notation internationale des pieces, sans la couleur associé *)
-type piece = P | B | N | R | Q | K
-
-(* Piece qui bouge / case de depart / case d'arrivee *)
-type chessmove = Chessmove of piece * int * int | ShortCastling | LongCastling
-
 (* Ajoute l'ensemble des coups du bitboard dans la liste des coups possibles *)
 let rec add_moves_to_list p n bitboard acc =
   match bitboard with
@@ -13,12 +7,19 @@ let rec add_moves_to_list p n bitboard acc =
   | _ ->
       add_moves_to_list p n
         (Bitboard.pop_lsb bitboard)
-        (Chessmove (p, n, Bitboard.get_lsb bitboard) :: acc)
+        (Board.Chessmove (p, n, Bitboard.get_lsb bitboard) :: acc)
+
+let rec add_unmoves_to_list p n acc = function
+  | 0L -> acc
+  | b ->
+      add_unmoves_to_list p n
+        (Board.Chessmove (p, Bitboard.get_lsb b, n) :: acc)
+        (Bitboard.pop_lsb b)
 
 (* Joue le coup et renvoie la nouvelle position *)
 let play_move (chessboard : Board.chessboard) move =
   match (move, chessboard.iswhite) with
-  | ShortCastling, true ->
+  | Board.ShortCastling, true ->
       {
         (* Petit roque blanc *)
         chessboard with
@@ -27,7 +28,7 @@ let play_move (chessboard : Board.chessboard) move =
         iswhite = false;
         wcastle = false;
       }
-  | ShortCastling, false ->
+  | Board.ShortCastling, false ->
       {
         (*Petit roque noir *)
         chessboard with
@@ -36,7 +37,7 @@ let play_move (chessboard : Board.chessboard) move =
         iswhite = true;
         bcastle = false;
       }
-  | LongCastling, true ->
+  | Board.LongCastling, true ->
       {
         (* Grand roque blanc*)
         chessboard with
@@ -45,7 +46,7 @@ let play_move (chessboard : Board.chessboard) move =
         iswhite = false;
         wcastle = false;
       }
-  | LongCastling, false ->
+  | Board.LongCastling, false ->
       {
         (* Grand roque noir *)
         chessboard with
@@ -54,7 +55,7 @@ let play_move (chessboard : Board.chessboard) move =
         iswhite = true;
         bcastle = false;
       }
-  | Chessmove (p, n_from, n_to), _ -> (
+  | Board.Chessmove (p, n_from, n_to), _ -> (
       (* Echiquier temporaire sans aucune piece sur la case d'arrivee et de depart *)
       let clear b = Bitboard.clear_nth (Bitboard.clear_nth b n_from) n_to in
       let tempboard =
@@ -109,6 +110,14 @@ let play_move (chessboard : Board.chessboard) move =
             bking = Bitboard.set_nth tempboard.bking n_to;
             bcastle = false;
           })
+
+let play_unmove chessboard = function
+  | Board.Chessmove (p, n_from, n_to) ->
+      Board.change_turn
+        (play_move
+           (Board.change_turn chessboard)
+           (Board.Chessmove (p, n_to, n_from)))
+  | _ -> failwith "Cas impossible"
 
 (* Affiche la liste des coups possibles *)
 let rec print_moves board moves =

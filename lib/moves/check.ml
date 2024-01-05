@@ -41,4 +41,4 @@ let is_legal_move board move = is_legal (Move.play_move board move)
 (* Verifie si le roi est un echecs *)
 let is_check (board : Board.chessboard) =
   (* On regarde si c'etait a l'adversaire de jouer s'il pourrait manger le roi*)
-  not (is_legal { board with iswhite = not board.iswhite })
+  not (is_legal (Board.change_turn board))
