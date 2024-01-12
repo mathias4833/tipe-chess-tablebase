@@ -17,45 +17,45 @@ let rec add_unmoves_to_list p n acc = function
         (Bitboard.pop_lsb b)
 
 (* Joue le coup et renvoie la nouvelle position *)
-let play_move (chessboard : Board.chessboard) move =
-  match (move, chessboard.iswhite) with
-  | Board.ShortCastling, true ->
+let play_move (chessboard : Board.chessboard) (move : Board.chessmove) =
+  match (move, chessboard.color) with
+  | ShortCastling, White ->
       {
         (* Petit roque blanc *)
         chessboard with
         wking = Bitboard.set_nth 0L 6;
         wrooks = Bitboard.set_nth (Bitboard.clear_nth chessboard.wrooks 7) 5;
-        iswhite = false;
+        color = Black;
         wcastle = false;
       }
-  | Board.ShortCastling, false ->
+  | ShortCastling, Black ->
       {
         (*Petit roque noir *)
         chessboard with
         bking = Bitboard.set_nth 0L 62;
         brooks = Bitboard.set_nth (Bitboard.clear_nth chessboard.wrooks 63) 61;
-        iswhite = true;
+        color = White;
         bcastle = false;
       }
-  | Board.LongCastling, true ->
+  | LongCastling, White ->
       {
         (* Grand roque blanc*)
         chessboard with
         wking = Bitboard.set_nth 0L 2;
         wrooks = Bitboard.set_nth (Bitboard.clear_nth chessboard.wrooks 0) 3;
-        iswhite = false;
+        color = Black;
         wcastle = false;
       }
-  | Board.LongCastling, false ->
+  | LongCastling, Black ->
       {
         (* Grand roque noir *)
         chessboard with
         bking = Bitboard.set_nth 0L 58;
         brooks = Bitboard.set_nth (Bitboard.clear_nth chessboard.wrooks 56) 59;
-        iswhite = true;
+        color = White;
         bcastle = false;
       }
-  | Board.Chessmove (p, n_from, n_to), _ -> (
+  | Chessmove (p, n_from, n_to), _ -> (
       (* Echiquier temporaire sans aucune piece sur la case d'arrivee et de depart *)
       let clear b = Bitboard.clear_nth (Bitboard.clear_nth b n_from) n_to in
       let tempboard =
@@ -73,36 +73,36 @@ let play_move (chessboard : Board.chessboard) move =
           brooks = clear chessboard.brooks;
           bqueen = clear chessboard.bqueen;
           bking = clear chessboard.bking;
-          iswhite = not chessboard.iswhite;
+          color = Board.change_color chessboard.color;
         }
       in
       (* On met la piece sur la case d'arrivee *)
-      match (p, chessboard.iswhite) with
-      | P, true ->
+      match (p, chessboard.color) with
+      | P, White ->
           { tempboard with wpawns = Bitboard.set_nth tempboard.wpawns n_to }
-      | B, true ->
+      | B, White ->
           { tempboard with wbishops = Bitboard.set_nth tempboard.wbishops n_to }
-      | N, true ->
+      | N, White ->
           { tempboard with wknights = Bitboard.set_nth tempboard.wknights n_to }
-      | R, true ->
+      | R, White ->
           { tempboard with wrooks = Bitboard.set_nth tempboard.wrooks n_to }
-      | Q, true ->
+      | Q, White ->
           { tempboard with wqueen = Bitboard.set_nth tempboard.wqueen n_to }
-      | K, true ->
+      | K, White ->
           {
             tempboard with
             wking = Bitboard.set_nth tempboard.wking n_to;
             wcastle = false;
           }
-      | P, false ->
+      | P, Black ->
           { tempboard with bpawns = Bitboard.set_nth tempboard.bpawns n_to }
-      | B, false ->
+      | B, Black ->
           { tempboard with bbishops = Bitboard.set_nth tempboard.bbishops n_to }
-      | N, false ->
+      | N, Black ->
           { tempboard with bknights = Bitboard.set_nth tempboard.bknights n_to }
-      | R, false ->
+      | R, Black ->
           { tempboard with brooks = Bitboard.set_nth tempboard.brooks n_to }
-      | Q, false ->
+      | Q, Black ->
           { tempboard with bqueen = Bitboard.set_nth tempboard.bqueen n_to }
       | _ ->
           {

@@ -20,9 +20,7 @@ let generate_moves chessboard =
         generate_moves_aux (Bitboard.pop_lsb board)
           (Move.add_moves_to_list Q n moves acc)
   in
-  generate_moves_aux
-    (Board.if_w_else chessboard chessboard.wqueen chessboard.bqueen)
-    []
+  generate_moves_aux (Board.get_ally_bitboard chessboard Q) []
 
 let generate_unmoves chessboard =
   let whole = Board.get_whole_board chessboard in
@@ -39,5 +37,4 @@ let generate_unmoves chessboard =
           (Move.add_unmoves_to_list Q n acc moves)
           (Bitboard.pop_lsb b)
   in
-  generate_unmoves_aux []
-    (Board.if_w_else chessboard chessboard.wqueen chessboard.bqueen)
+  generate_unmoves_aux [] (Board.get_ally_bitboard chessboard Q)

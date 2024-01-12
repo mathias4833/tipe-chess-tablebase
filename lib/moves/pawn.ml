@@ -32,16 +32,16 @@ let table_bmove =
   Array.init 64 create_table_move
 
 (* Renvoie le bitboard des coups possibles en avancant *)
-let get_move_board iswhite whole n =
+let get_move_board (color : Board.color) whole n =
   let moveboard =
-    match iswhite with
-    | true ->
+    match color with
+    | White ->
         let defaultmove = table_wmove.(n) in
         (* Verifie si le pion blanc peut avancer de deux cases *)
         if 7 < n && n < 16 && logand defaultmove whole = 0L then
           logor defaultmove table_wmove.(n + 8)
         else defaultmove
-    | _ ->
+    | Black ->
         let defaultmove = table_bmove.(n) in
         (* Verifie si le pion noir peut avancer de deux cases *)
         if 47 < n && n < 56 && logand defaultmove whole = 0L then
@@ -65,7 +65,7 @@ let generate_moves chessboard =
         let takeboard =
           Board.if_w_else chessboard table_wtake.(n) table_btake.(n)
         in
-        let moveboard = get_move_board chessboard.iswhite whole n in
+        let moveboard = get_move_board chessboard.color whole n in
 
         (* Bitboard resultant des coups possibles *)
         let all_moves = logor (logand takeboard enemy) moveboard in

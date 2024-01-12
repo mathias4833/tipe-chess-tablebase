@@ -1,33 +1,34 @@
-(*
-open Solver
 open Utils
+open Endgame;;
 
+let _nb_coups = 1 in
+(* let _n = (_nb_coups * 2) - 1 in *)
+let _n = 12 in
+let _pieces =
+  [ (Board.K, Board.White); (Board.K, Board.Black); (Board.R, Board.White) ]
+in
+let _table = Table_generator.generate_table _pieces _n in
+let _count = ref 0 in
 
-let measure_time board depth =
-  let t = Sys.time () in
-  let _, b = Minimax.minimax board depth in
-  Printf.printf "Execution time: %fs\n" (Sys.time () -. t);
-  Board.print_board b
-;;
-
-measure_time Minimax.mat_in_1 1
-*)
-
-let _n = 33 in
-let _table = Endgame.Table_rook.generate_table _n in
-
-(* Printf.printf "%b" (Hashtbl.mem _table _pos); *)
 Hashtbl.iter
   (fun b e ->
     match e with
-    | Endgame.Table_rook.Win (Utils.Board.Chessmove (_, f, t), n) ->
+    | Table_generator.Win (Board.Chessmove (_, f, t), n) ->
         if n = _n then (
-          Utils.Board.print_board b;
-          Printf.printf "%i %i\n" f t)
+          let i1, j1 = Bitboard.coord_of_index f in
+          let i2, j2 = Bitboard.coord_of_index t in
+          let _board = Board.number_to_board b _pieces in
+          incr _count;
+          Board.print_board _board;
+          Printf.printf "Position: %i \n%!" b;
+          Printf.printf "Mat en %i coups: (%i, %i) --> (%i, %i)\n\n%!" _n i1 j1
+            i2 j2)
     | _ -> ())
   _table;
-Printf.printf "%i" (Hashtbl.length _table)
+
+Printf.printf "La table contient %i positions\n%!" (Hashtbl.length _table);
+Printf.printf "Nombre de mats en %i coups: %i \n%!" _n !_count
 
 (* List.iter *)
-(* (fun b -> Utils.Board.print_board b) *)
-(* (Endgame.Table_rook.generate_mates ()) *)
+(*   (fun b -> Utils.Board.print_board b) *)
+(*   (Endgame.Table_generator.generate_mates _pieces) *)

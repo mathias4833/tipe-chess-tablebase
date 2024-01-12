@@ -22,23 +22,20 @@ let table_move =
 (* Genere l'ensemble des coups pour le cavalier *)
 let generate_moves chessboard =
   let ally = Board.get_ally_board chessboard in
-
-  let rec generate_moves_aux board acc =
-    match board with
+  let rec generate_moves_aux acc = function
     | 0L -> acc
-    | _ ->
+    | board ->
         (* Indice du cavalier *)
         let n = Bitboard.get_lsb board in
         let all_moves = logand table_move.(n) (lognot ally) in
-        generate_moves_aux (Bitboard.pop_lsb board)
+        generate_moves_aux
           (Move.add_moves_to_list N n all_moves acc)
+          (Bitboard.pop_lsb board)
   in
-  generate_moves_aux
-    (Board.if_w_else chessboard chessboard.wknights chessboard.bknights)
-    []
+  generate_moves_aux [] (Board.get_ally_bitboard chessboard N)
 
 let generate_unmoves chessboard =
-  let whole = Board.get_ally_board chessboard in
+  let whole = Board.get_whole_board chessboard in
   let rec generate_unmoves_aux acc = function
     | 0L -> acc
     | b ->
@@ -48,5 +45,4 @@ let generate_unmoves chessboard =
           (Move.add_unmoves_to_list N n acc all_unmoves)
           (Bitboard.pop_lsb b)
   in
-  generate_unmoves_aux []
-    (Board.if_w_else chessboard chessboard.wknights chessboard.bknights)
+  generate_unmoves_aux [] (Board.get_ally_bitboard chessboard N)

@@ -141,9 +141,7 @@ let generate_moves chessboard =
         generate_moves_aux (Bitboard.pop_lsb board)
           (Move.add_moves_to_list R n moves acc)
   in
-  generate_moves_aux
-    (Board.if_w_else chessboard chessboard.wrooks chessboard.brooks)
-    []
+  generate_moves_aux (Board.get_ally_bitboard chessboard R) []
 
 let unmoves_from_board whole n =
   let blockerboard = logand whole table_mask.(n) in
@@ -160,5 +158,4 @@ let generate_unmoves chessboard =
           (Move.add_unmoves_to_list R n acc unmoves)
           (Bitboard.pop_lsb b)
   in
-  generate_unmoves_aux []
-    (Board.if_w_else chessboard chessboard.wrooks chessboard.brooks)
+  generate_unmoves_aux [] (Board.get_ally_bitboard chessboard R)

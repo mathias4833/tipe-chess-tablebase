@@ -23,17 +23,18 @@ let generate_legal_moves board =
 
 (* Genere l'ensemble des coups legaux qui auraient pu etre joué avant *)
 let generate_legal_unmoves board =
-  let b = Board.change_turn board in
   let rec remove_illegal_unmoves acc = function
     | [] -> acc
     (* Le coup est legal *)
     | h :: t
       when let b = Move.play_unmove board h in
-           Check.is_legal b && not (Check.is_check b) ->
+           Check.is_legal b ->
         remove_illegal_unmoves (h :: acc) t
     (* Le coup n'est pas legal, on ne l'ajoute pas a l'accumulateur *)
     | _ :: t -> remove_illegal_unmoves acc t
   in
+  (* On change le tour pour obtenir les coups des pieces adverses *)
+  let b = Board.change_turn board in
   List.fold_left remove_illegal_unmoves []
     [
       King.generate_unmoves b;

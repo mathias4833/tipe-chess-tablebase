@@ -49,30 +49,70 @@ let rotate_counterclockwise (i, j) = (j, 7 - i)
 (* Tourne le bitboard de -pi/2 *)
 let rotate_clockwise (i, j) = (7 - j, i)
 
-(* Effectue un symetrie verticale *)
-let flip (i, j) = (i, 7 - j)
+(* Effectue une symetrie verticale *)
+let flip_vertical (i, j) = (i, 7 - j)
+let flip_horizontal (i, j) = (7 - i, j)
 
-(* Verifie si l'echiquier est norm*)
-let is_normalized (board : Board.chessboard) =
-  let i, j = Bitboard.coord_of_index (Bitboard.get_lsb board.wking) in
-  j < 4 && i <= j
+(* Effectue une symetrie diagonale *)
+let flip_diagonal (i, j) = (j, i)
+let flip_antidiagonal (i, j) = (7 - j, 7 - i)
+
+(* Verifie si l'echiquier est normalise *)
+let is_normalized (board : Board.chessboard) pieces =
+  let get_coord b p =
+    let n = Bitboard.get_lsb (Board.get_bitboard b p) in
+    Bitboard.coord_of_index n
+  in
+  let rec aux = function
+    | [] -> true
+    | h :: t ->
+        let i, j = get_coord board h in
+        if i = j then aux t else i < j
+  in
+  match pieces with
+  | [] -> true
+  | h :: t ->
+      let i, j = get_coord board h in
+      if j > 3 || i > 3 then false else if i = j then aux t else i < j
 
 (* Tourne l'echiquier pour avoir le roi dans le triangle en bas a gauche de l'echiquier *)
-let rec normalize_board (board : Board.chessboard) (move : Board.chessmove) =
-  let transform_aux f b m = (transform_board f b, transform_move f m) in
+let rec normalize_board (board : Board.chessboard) (move : Board.chessmove)
+    pieces =
+  if is_normalized board pieces then (board, move)
+  else
+    let transform_aux f b m = (transform_board f b, transform_move f m) in
 
-  let n = Bitboard.get_lsb board.wking in
-  match Bitboard.coord_of_index n with
-  | i, j when j < 4 && i <= j -> (board, move)
-  | i, j when j >= 4 && i <= 7 - j -> transform_aux flip board move
-  | i, j when i < 4 && i > j ->
-      transform_aux (flip << rotate_counterclockwise) board move
-  | i, j when i >= 4 && j <= 7 - i ->
-      transform_aux rotate_counterclockwise board move
-  | _ ->
-      let b, m =
-        transform_aux
-          (rotate_counterclockwise << rotate_counterclockwise)
-          board move
-      in
-      normalize_board b m
+    let n = Bitboard.get_lsb board.wking in
+    match Bitboard.coord_of_index n with
+    (* Le roi est bien place mais l'echiquier n'est pas normalise, donc la piece suivante n'est pas bien placee *)
+    | i, j when i < 4 && j < 4 && i <= j ->
+        transform_aux flip_diagonal board move
+    (* Triangle gauche en bas a gauche *)
+    | i, j when i < 4 && j < 4 && i > j ->
+        let b, m = transform_aux flip_diagonal board move in
+        normalize_board b m pieces
+    (* Triangle gauche en bas a droite *)
+    | i, j when i < 4 && j >= 4 && i <= 7 - j ->
+        let b, m = transform_aux flip_vertical board move in
+        normalize_board b m pieces
+    (* Triangle droit en bas a droite *)
+    | i, j when i < 4 && j >= 4 && i > 7 - j ->
+        let b, m = transform_aux rotate_clockwise board move in
+        normalize_board b m pieces
+    (* Triangle gauche en haut a gauche *)
+    | i, j when i >= 4 && j < 4 && j <= 7 - i ->
+        let b, m = transform_aux rotate_counterclockwise board move in
+        normalize_board b m pieces
+    (* Triangle droit en haut a gauche *)
+    | i, j when i >= 4 && j < 4 && i > 7 - j ->
+        let b, m = transform_aux flip_horizontal board move in
+        normalize_board b m pieces
+    (* Triangle gauche en haut a droite *)
+    | i, j when i >= 4 && j >= 4 && i > j ->
+        let b, m = transform_aux rotate_counterclockwise board move in
+        normalize_board b m pieces
+    (* Triangle droit en haut a droite *)
+    | i, j when i >= 4 && j >= 4 && i <= j ->
+        let b, m = transform_aux flip_antidiagonal board move in
+        normalize_board b m pieces
+    | _ -> failwith "Cas impossible"
