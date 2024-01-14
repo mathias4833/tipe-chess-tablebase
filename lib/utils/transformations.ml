@@ -58,7 +58,8 @@ let flip_diagonal (i, j) = (j, i)
 let flip_antidiagonal (i, j) = (7 - j, 7 - i)
 
 (* Verifie si l'echiquier est normalise *)
-let is_normalized (board : Board.chessboard) pieces =
+let is_normalized (board : Board.chessboard)
+    (pieces : Board.colored_chesspiece list) =
   let get_coord b p =
     let n = Bitboard.get_lsb (Board.get_bitboard b p) in
     Bitboard.coord_of_index n
@@ -77,7 +78,7 @@ let is_normalized (board : Board.chessboard) pieces =
 
 (* Tourne l'echiquier pour avoir le roi dans le triangle en bas a gauche de l'echiquier *)
 let rec normalize_board (board : Board.chessboard) (move : Board.chessmove)
-    pieces =
+    (pieces : Board.colored_chesspiece list) =
   if is_normalized board pieces then (board, move)
   else
     let transform_aux f b m = (transform_board f b, transform_move f m) in
@@ -100,7 +101,7 @@ let rec normalize_board (board : Board.chessboard) (move : Board.chessmove)
         let b, m = transform_aux rotate_clockwise board move in
         normalize_board b m pieces
     (* Triangle gauche en haut a gauche *)
-    | i, j when i >= 4 && j < 4 && j <= 7 - i ->
+    | i, j when i >= 4 && j < 4 && i <= 7 - j ->
         let b, m = transform_aux rotate_counterclockwise board move in
         normalize_board b m pieces
     (* Triangle droit en haut a gauche *)

@@ -148,8 +148,7 @@ let generate_moves chessboard =
         generate_moves_aux (Bitboard.pop_lsb board)
           (Move.add_moves_to_list B n moves acc)
   in
-  if Board.is_white chessboard then generate_moves_aux chessboard.wbishops []
-  else generate_moves_aux chessboard.bbishops []
+  generate_moves_aux (Board.get_ally_bitboard chessboard Board.B) []
 
 (* Genere l'ensemble des coups ayant pu etre joué avant *)
 let unmoves_from_board whole n =
@@ -168,6 +167,4 @@ let generate_unmoves chessboard =
           (Move.add_unmoves_to_list B n acc moves)
           (Bitboard.pop_lsb b)
   in
-  Board.if_w_else chessboard
-    (generate_unmoves_aux [] chessboard.wbishops)
-    (generate_unmoves_aux [] chessboard.bbishops)
+  generate_unmoves_aux [] (Board.get_ally_bitboard chessboard Board.B)

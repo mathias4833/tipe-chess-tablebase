@@ -3,9 +3,15 @@ open Endgame;;
 
 let _nb_coups = 1 in
 (* let _n = (_nb_coups * 2) - 1 in *)
-let _n = 12 in
+let _n = 65 in
 let _pieces =
-  [ (Board.K, Board.White); (Board.K, Board.Black); (Board.R, Board.White) ]
+  (* [ (Board.K, Board.White); (Board.K, Board.Black); (Board.R, Board.White) ] *)
+  [
+    (Board.K, Board.White);
+    (Board.K, Board.Black);
+    (Board.N, Board.White);
+    (Board.B, Board.White);
+  ]
 in
 let _table = Table_generator.generate_table _pieces _n in
 let _count = ref 0 in
@@ -20,14 +26,13 @@ Hashtbl.iter
           let _board = Board.number_to_board b _pieces in
           incr _count;
           Board.print_board _board;
-          Printf.printf "Position: %i \n%!" b;
-          Printf.printf "Mat en %i coups: (%i, %i) --> (%i, %i)\n\n%!" _n i1 j1
-            i2 j2)
+          Printf.printf "Mat en %i demi-coups: (%i, %i) --> (%i, %i)\n\n%!" _n
+            i1 j1 i2 j2)
     | _ -> ())
   _table;
 
 Printf.printf "La table contient %i positions\n%!" (Hashtbl.length _table);
-Printf.printf "Nombre de mats en %i coups: %i \n%!" _n !_count
+Printf.printf "Nombre de mats en %i demi-coups: %i \n%!" _n !_count
 
 (* List.iter *)
 (*   (fun b -> Utils.Board.print_board b) *)

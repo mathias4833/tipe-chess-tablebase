@@ -122,7 +122,7 @@ let get_ally_board board =
   List.fold_left logor 0L
     [
       get_ally_bitboard board P;
-      get_ally_bitboard board K;
+      get_ally_bitboard board B;
       get_ally_bitboard board N;
       get_ally_bitboard board R;
       get_ally_bitboard board Q;
@@ -232,23 +232,31 @@ let number_to_color = function
   | 0 -> Black
   | _ -> failwith "Indice invalide"
 
+(* let board_to_number b _ = b *)
+(* let number_to_board n _ = n *)
+
 let board_to_number board pieces =
-  let rec aux acc = function
+  let rec aux acc prev_square = function
     | [] -> (2 * acc) + color_to_number board.color
     | h :: t ->
         let b = get_bitboard board h in
-        let n = Bitboard.get_lsb b in
-        aux ((64 * acc) + n) t
+        let n = if b = 0L then prev_square else Bitboard.get_lsb b in
+        aux ((acc * 64) + n) n t
   in
-  aux 0 pieces
+  aux 0 (-1) pieces
 
 let number_to_board num pieces =
-  let rec aux acc num = function
+  let rec map_pieces_to_indices acc num = function
     | [] -> acc
-    | h :: t ->
-        let n = num mod 64 in
+    | h :: t -> map_pieces_to_indices ((h, num mod 64) :: acc) (num / 64) t
+  in
+  let rec create_board acc = function
+    | [] -> acc
+    | (p, n) :: (_, m) :: t when n = m -> create_board acc ((p, n) :: t)
+    | (p, n) :: t ->
         let b = Bitboard.set_nth 0L n in
-        aux (set_bitboard acc b h) (num / 64) t
+        create_board (set_bitboard acc b p) t
   in
   let color = number_to_color (num mod 2) in
-  aux (empty_board color) (num / 2) (List.rev pieces)
+  create_board (empty_board color)
+    (map_pieces_to_indices [] (num / 2) (List.rev pieces))
