@@ -70,50 +70,39 @@ let is_normalized (board : Board.chessboard)
         let i, j = get_coord board h in
         if i = j then aux t else i < j
   in
-  match pieces with
-  | [] -> true
-  | h :: t ->
-      let i, j = get_coord board h in
-      if j > 3 || i > 3 then false else if i = j then aux t else i < j
+  let i, j = get_coord board (Board.K, Board.White) in
+  if j > 3 || i > 3 then false
+  else if i = j then aux ((Board.K, Board.Black) :: pieces)
+  else i < j
 
 (* Tourne l'echiquier pour avoir le roi dans le triangle en bas a gauche de l'echiquier *)
-let rec normalize_board (board : Board.chessboard) (move : Board.chessmove)
+let rec normalize_board (board : Board.chessboard)
     (pieces : Board.colored_chesspiece list) =
-  if is_normalized board pieces then (board, move)
+  if is_normalized board pieces then board
   else
-    let transform_aux f b m = (transform_board f b, transform_move f m) in
-
     let n = Bitboard.get_lsb board.wking in
     match Bitboard.coord_of_index n with
     (* Le roi est bien place mais l'echiquier n'est pas normalise, donc la piece suivante n'est pas bien placee *)
-    | i, j when i < 4 && j < 4 && i <= j ->
-        transform_aux flip_diagonal board move
+    | i, j when i < 4 && j < 4 && i <= j -> transform_board flip_diagonal board
     (* Triangle gauche en bas a gauche *)
     | i, j when i < 4 && j < 4 && i > j ->
-        let b, m = transform_aux flip_diagonal board move in
-        normalize_board b m pieces
+        normalize_board (transform_board flip_diagonal board) pieces
     (* Triangle gauche en bas a droite *)
     | i, j when i < 4 && j >= 4 && i <= 7 - j ->
-        let b, m = transform_aux flip_vertical board move in
-        normalize_board b m pieces
+        normalize_board (transform_board flip_diagonal board) pieces
     (* Triangle droit en bas a droite *)
     | i, j when i < 4 && j >= 4 && i > 7 - j ->
-        let b, m = transform_aux rotate_clockwise board move in
-        normalize_board b m pieces
+        normalize_board (transform_board rotate_clockwise board) pieces
     (* Triangle gauche en haut a gauche *)
     | i, j when i >= 4 && j < 4 && i <= 7 - j ->
-        let b, m = transform_aux rotate_counterclockwise board move in
-        normalize_board b m pieces
+        normalize_board (transform_board rotate_counterclockwise board) pieces
     (* Triangle droit en haut a gauche *)
     | i, j when i >= 4 && j < 4 && i > 7 - j ->
-        let b, m = transform_aux flip_horizontal board move in
-        normalize_board b m pieces
+        normalize_board (transform_board flip_horizontal board) pieces
     (* Triangle gauche en haut a droite *)
     | i, j when i >= 4 && j >= 4 && i > j ->
-        let b, m = transform_aux rotate_counterclockwise board move in
-        normalize_board b m pieces
+        normalize_board (transform_board rotate_counterclockwise board) pieces
     (* Triangle droit en haut a droite *)
     | i, j when i >= 4 && j >= 4 && i <= j ->
-        let b, m = transform_aux flip_antidiagonal board move in
-        normalize_board b m pieces
+        normalize_board (transform_board flip_antidiagonal board) pieces
     | _ -> failwith "Cas impossible"

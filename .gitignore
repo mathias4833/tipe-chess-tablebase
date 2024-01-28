@@ -31,3 +31,6 @@ _opam/
 # Repl stuff
 .replit
 replit.nix
+
+# Tablebases
+*.table
