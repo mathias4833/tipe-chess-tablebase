@@ -22,9 +22,9 @@ type chessboard = {
   bcastle : bool;
 }
 
-(* Piece qui bouge / case de depart / case d'arrivee *)
+(* Piece qui bouge / case de depart / case d'arrivee / piece mangee *)
 type chessmove =
-  | Chessmove of chesspiece * int * int
+  | Chessmove of chesspiece * int * int * colored_chesspiece option
   | ShortCastling
   | LongCastling
 

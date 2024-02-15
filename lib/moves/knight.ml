@@ -34,7 +34,7 @@ let generate_moves chessboard =
   in
   generate_moves_aux [] (Board.get_ally_bitboard chessboard N)
 
-let generate_unmoves chessboard =
+let generate_unmoves chessboard pieces =
   let whole = Board.get_whole_board chessboard in
   let rec generate_unmoves_aux acc = function
     | 0L -> acc
@@ -42,7 +42,7 @@ let generate_unmoves chessboard =
         let n = Bitboard.get_lsb b in
         let all_unmoves = logand table_move.(n) (lognot whole) in
         generate_unmoves_aux
-          (Move.add_unmoves_to_list N n acc all_unmoves)
+          (Move.add_unmoves_to_list N n acc chessboard pieces all_unmoves)
           (Bitboard.pop_lsb b)
   in
   generate_unmoves_aux [] (Board.get_ally_bitboard chessboard N)

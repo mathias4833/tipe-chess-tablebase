@@ -22,7 +22,7 @@ let generate_legal_moves board =
     ]
 
 (* Genere l'ensemble des coups legaux qui auraient pu etre joué avant *)
-let generate_legal_unmoves board =
+let generate_legal_unmoves board pieces =
   let rec remove_illegal_unmoves acc = function
     | [] -> acc
     (* Le coup est legal *)
@@ -37,9 +37,9 @@ let generate_legal_unmoves board =
   let b = Board.change_turn board in
   List.fold_left remove_illegal_unmoves []
     [
-      King.generate_unmoves b;
-      Queen.generate_unmoves b;
-      Rook.generate_unmoves b;
-      Bishop.generate_unmoves b;
-      Knight.generate_unmoves b;
+      King.generate_unmoves b pieces;
+      Queen.generate_unmoves b pieces;
+      Rook.generate_unmoves b pieces;
+      Bishop.generate_unmoves b pieces;
+      Knight.generate_unmoves b pieces;
     ]

@@ -7,14 +7,23 @@ let rec add_moves_to_list p n bitboard acc =
   | _ ->
       add_moves_to_list p n
         (Bitboard.pop_lsb bitboard)
-        (Board.Chessmove (p, n, Bitboard.get_lsb bitboard) :: acc)
+        (Board.Chessmove (p, n, Bitboard.get_lsb bitboard, None) :: acc)
 
-let rec add_unmoves_to_list p n acc = function
+let rec add_unmoves_to_list p n acc board pieces = function
   | 0L -> acc
   | b ->
+      let from = Bitboard.get_lsb b in
+      let moves =
+        List.filter_map
+          (fun x ->
+            if Board.get_bitboard board x = 0L then
+              Some (Board.Chessmove (p, from, n, Some x))
+            else None)
+          pieces
+      in
       add_unmoves_to_list p n
-        (Board.Chessmove (p, Bitboard.get_lsb b, n) :: acc)
-        (Bitboard.pop_lsb b)
+        (Board.Chessmove (p, from, n, None) :: (moves @ acc))
+        board pieces (Bitboard.pop_lsb b)
 
 (* Joue le coup et renvoie la nouvelle position *)
 let play_move (chessboard : Board.chessboard) (move : Board.chessmove) =
@@ -55,7 +64,7 @@ let play_move (chessboard : Board.chessboard) (move : Board.chessmove) =
         color = White;
         bcastle = false;
       }
-  | Chessmove (p, n_from, n_to), _ -> (
+  | Chessmove (p, n_from, n_to, _), _ -> (
       (* Echiquier temporaire sans aucune piece sur la case d'arrivee et de depart *)
       let clear b = Bitboard.clear_nth (Bitboard.clear_nth b n_from) n_to in
       let tempboard =
@@ -76,6 +85,7 @@ let play_move (chessboard : Board.chessboard) (move : Board.chessmove) =
           color = Board.change_color chessboard.color;
         }
       in
+
       (* On met la piece sur la case d'arrivee *)
       match (p, chessboard.color) with
       | P, White ->
@@ -112,11 +122,16 @@ let play_move (chessboard : Board.chessboard) (move : Board.chessmove) =
           })
 
 let play_unmove chessboard = function
-  | Board.Chessmove (p, n_from, n_to) ->
-      Board.change_turn
-        (play_move
-           (Board.change_turn chessboard)
-           (Board.Chessmove (p, n_to, n_from)))
+  | Board.Chessmove (p, n_from, n_to, oq) -> (
+      let board =
+        Board.change_turn
+          (play_move
+             (Board.change_turn chessboard)
+             (Board.Chessmove (p, n_to, n_from, oq)))
+      in
+      match oq with
+      | None -> board
+      | Some q -> Board.set_bitboard board (Bitboard.set_nth 0L n_to) q)
   | _ -> failwith "Cas impossible"
 
 (* Affiche la liste des coups possibles *)

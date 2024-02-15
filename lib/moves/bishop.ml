@@ -155,7 +155,7 @@ let unmoves_from_board whole n =
   let blockerboard = logand whole table_mask.(n) in
   logand (Hashtbl.find table_moves.(n) blockerboard) (lognot whole)
 
-let generate_unmoves chessboard =
+let generate_unmoves chessboard pieces =
   let whole = Board.get_whole_board chessboard in
 
   let rec generate_unmoves_aux acc = function
@@ -164,7 +164,7 @@ let generate_unmoves chessboard =
         let n = Bitboard.get_lsb b in
         let moves = unmoves_from_board whole n in
         generate_unmoves_aux
-          (Move.add_unmoves_to_list B n acc moves)
+          (Move.add_unmoves_to_list B n acc chessboard pieces moves)
           (Bitboard.pop_lsb b)
   in
   generate_unmoves_aux [] (Board.get_ally_bitboard chessboard Board.B)

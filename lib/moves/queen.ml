@@ -22,7 +22,7 @@ let generate_moves chessboard =
   in
   generate_moves_aux (Board.get_ally_bitboard chessboard Q) []
 
-let generate_unmoves chessboard =
+let generate_unmoves chessboard pieces =
   let whole = Board.get_whole_board chessboard in
   let rec generate_unmoves_aux acc = function
     | 0L -> acc
@@ -34,7 +34,7 @@ let generate_unmoves chessboard =
             (Bishop.unmoves_from_board whole n)
         in
         generate_unmoves_aux
-          (Move.add_unmoves_to_list Q n acc moves)
+          (Move.add_unmoves_to_list Q n acc chessboard pieces moves)
           (Bitboard.pop_lsb b)
   in
   generate_unmoves_aux [] (Board.get_ally_bitboard chessboard Q)

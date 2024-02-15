@@ -13,9 +13,9 @@ let generate_moves (chessboard : Board.chessboard) =
           Bitboard.get_nth chessboard.wrooks 7 = 1L
           && Bitboard.get_nth whole 5 = 0L
           && Bitboard.get_nth whole 6 = 0L
-          && Check.is_legal_move chessboard (Chessmove (K, 4, 4))
-          && Check.is_legal_move chessboard (Chessmove (K, 4, 5))
-          && Check.is_legal_move chessboard (Chessmove (K, 4, 6))
+          && Check.is_legal_move chessboard (Chessmove (K, 4, 4, None))
+          && Check.is_legal_move chessboard (Chessmove (K, 4, 5, None))
+          && Check.is_legal_move chessboard (Chessmove (K, 4, 6, None))
         then [ Board.ShortCastling ]
         else []
       in
@@ -25,9 +25,9 @@ let generate_moves (chessboard : Board.chessboard) =
         && Bitboard.get_nth whole 1 = 0L
         && Bitboard.get_nth whole 2 = 0L
         && Bitboard.get_nth whole 3 = 0L
-        && Check.is_legal_move chessboard (Chessmove (K, 4, 4))
-        && Check.is_legal_move chessboard (Chessmove (K, 4, 3))
-        && Check.is_legal_move chessboard (Chessmove (K, 4, 2))
+        && Check.is_legal_move chessboard (Chessmove (K, 4, 4, None))
+        && Check.is_legal_move chessboard (Chessmove (K, 4, 3, None))
+        && Check.is_legal_move chessboard (Chessmove (K, 4, 2, None))
       then Board.LongCastling :: castling_moves
       else castling_moves
     else [] (* Le roi a deja joue, pas de roque possible *)
@@ -41,9 +41,9 @@ let generate_moves (chessboard : Board.chessboard) =
         Bitboard.get_nth chessboard.brooks 63 = 1L
         && Bitboard.get_nth whole 61 = 0L
         && Bitboard.get_nth whole 62 = 0L
-        && Check.is_legal_move chessboard (Chessmove (K, 60, 60))
-        && Check.is_legal_move chessboard (Chessmove (K, 60, 61))
-        && Check.is_legal_move chessboard (Chessmove (K, 60, 62))
+        && Check.is_legal_move chessboard (Chessmove (K, 60, 60, None))
+        && Check.is_legal_move chessboard (Chessmove (K, 60, 61, None))
+        && Check.is_legal_move chessboard (Chessmove (K, 60, 62, None))
       then [ Board.ShortCastling ]
       else []
     in
@@ -53,9 +53,9 @@ let generate_moves (chessboard : Board.chessboard) =
       && Bitboard.get_nth whole 57 = 0L
       && Bitboard.get_nth whole 58 = 0L
       && Bitboard.get_nth whole 59 = 0L
-      && Check.is_legal_move chessboard (Chessmove (K, 60, 60))
-      && Check.is_legal_move chessboard (Chessmove (K, 60, 59))
-      && Check.is_legal_move chessboard (Chessmove (K, 60, 58))
+      && Check.is_legal_move chessboard (Chessmove (K, 60, 60, None))
+      && Check.is_legal_move chessboard (Chessmove (K, 60, 59, None))
+      && Check.is_legal_move chessboard (Chessmove (K, 60, 58, None))
     then Board.LongCastling :: castling_moves
     else castling_moves
   else [] (* Le roi a deja joue, pas de roque possible *)

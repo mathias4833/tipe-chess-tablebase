@@ -26,7 +26,8 @@ let generate_moves chessboard =
   let n = Bitboard.get_lsb (Board.get_ally_bitboard chessboard K) in
   Move.add_moves_to_list K n (logand table_move.(n) (lognot ally)) []
 
-let generate_unmoves chessboard =
+let generate_unmoves chessboard pieces =
   let whole = Board.get_whole_board chessboard in
   let n = Bitboard.get_lsb (Board.get_ally_bitboard chessboard K) in
-  Move.add_unmoves_to_list K n [] (logand table_move.(n) (lognot whole))
+  Move.add_unmoves_to_list K n [] chessboard pieces
+    (logand table_move.(n) (lognot whole))

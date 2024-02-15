@@ -2,7 +2,7 @@ open Bigarray
 open Utils
 
 let open_table () =
-  let size = 1 lsl 28 in
+  let size = 1 lsl 22 in
   let file_descr =
     Unix.openfile "endgame.table"
       [ Unix.O_RDWR; Unix.O_CREAT; Unix.O_TRUNC ]

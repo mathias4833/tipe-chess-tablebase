@@ -35,12 +35,12 @@ let transform_board f (b : Board.chessboard) =
   }
 
 let transform_move f = function
-  | Board.Chessmove (p, n, m) ->
+  | Board.Chessmove (p, n, m, q) ->
       let ni, nj = f (Bitboard.coord_of_index n) in
       let mi, mj = f (Bitboard.coord_of_index m) in
       let tn = Bitboard.index_of_coord ni nj in
       let tm = Bitboard.index_of_coord mi mj in
-      Board.Chessmove (p, tn, tm)
+      Board.Chessmove (p, tn, tm, q)
   | m -> m
 
 (* Tourne le bitboard de pi/2 *)

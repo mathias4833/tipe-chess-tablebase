@@ -14,9 +14,12 @@ let generate_mates pieces =
         generate_all_positions
           (List.concat_map
              (fun b ->
-               List.filter
-                 (fun bo -> Transformations.is_normalized bo pieces)
-                 (Board.add_piece b h))
+               let positions =
+                 List.filter
+                   (fun bo -> Transformations.is_normalized bo pieces)
+                   (Board.add_piece b h)
+               in
+               if fst h = K then positions else b :: positions)
              acc)
           t
   in
@@ -66,17 +69,18 @@ let generate_endgames pieces n =
         table
     | i ->
         (* Genere l'ensemble des coups precedents et l'ajoute a la table *)
-        Printf.printf "Profondeur %i.\n%!" i;
+        Printf.printf "Profondeur %i; %i pos\n%!" i (List.length acc);
         aux
           (List.concat_map
              (fun b ->
                List.filter_map
                  (fun m -> add_unmove table pieces b m i)
-                 (Move_generation.generate_legal_unmoves b))
+                 (Move_generation.generate_legal_unmoves b pieces))
              acc)
           (i + 1)
   in
   Printf.printf "Generation des mats\n%!";
   let mates = generate_mates pieces in
+  Printf.printf "Profondeur 1; %i\n%!" (List.length mates);
   List.iter (fun b -> table.{Serializer.board_to_number b pieces} <- 1) mates;
   aux mates 2
