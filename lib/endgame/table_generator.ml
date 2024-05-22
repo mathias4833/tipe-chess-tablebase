@@ -60,7 +60,7 @@ let add_unmove table pieces (board : Board.chessboard) (m : Board.chessmove) i =
 (* Genere les tables pour le jeu de pieces jusqu'au mat en n demi-coups *)
 let generate_endgames pieces n =
   Printf.printf "Creation du tableau\n%!";
-  let file_descr, table = Serializer.open_table () in
+  let file_descr, table = Serializer.open_table pieces in
 
   let rec aux acc = function
     | i when i > n ->
@@ -69,7 +69,7 @@ let generate_endgames pieces n =
         table
     | i ->
         (* Genere l'ensemble des coups precedents et l'ajoute a la table *)
-        Printf.printf "Profondeur %i; %i pos\n%!" i (List.length acc);
+        Printf.printf "Profondeur %i; %i pos\n%!" (i - 1) (List.length acc);
         aux
           (List.concat_map
              (fun b ->

@@ -1,8 +1,8 @@
 open Bigarray
 open Utils
 
-let open_table () =
-  let size = 1 lsl 22 in
+let open_table pieces =
+  let size = 462 * (1 lsl (6 * List.length pieces)) * 2 in
   let file_descr =
     Unix.openfile "endgame.table"
       [ Unix.O_RDWR; Unix.O_CREAT; Unix.O_TRUNC ]
@@ -101,6 +101,22 @@ let kings_index_of_couple i j =
   (fst kings_lookup_table).(n).(j)
 
 let kings_couple_of_index n = (snd kings_lookup_table).(n)
+
+(*
+(* Afficher graphique *)
+let board_to_number (board : Board.chessboard) pieces =
+  let rec board_to_number_aux acc = function
+    | [] -> (2 * acc) + color_to_number board.color
+    | h :: t ->
+        let b = Board.get_bitboard board h in
+        let n = Bitboard.get_lsb b in
+        board_to_number_aux ((64 * acc) + n) t
+  in
+  board_to_number_aux 0
+    ((Board.K, Board.White) :: (Board.K, Board.Black) :: pieces)
+
+let number_to_board _num _pieces = failwith "Not implemented"
+*)
 
 (* Renvoie un indice entre 0 et 2^(9 + pieces*6 + 1) *)
 let board_to_number (board : Board.chessboard) pieces =

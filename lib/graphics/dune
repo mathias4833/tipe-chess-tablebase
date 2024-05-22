@@ -1,0 +1,3 @@
+(library
+ (name graphics)
+ (libraries bimage bimage-unix))

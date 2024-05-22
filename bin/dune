@@ -3,4 +3,4 @@
 (executable
  (public_name chess_engine)
  (name main)
- (libraries moves endgame utils))
+ (libraries moves endgame utils graphics))
