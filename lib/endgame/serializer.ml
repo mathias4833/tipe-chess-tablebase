@@ -102,22 +102,6 @@ let kings_index_of_couple i j =
 
 let kings_couple_of_index n = (snd kings_lookup_table).(n)
 
-(*
-(* Afficher graphique *)
-let board_to_number (board : Board.chessboard) pieces =
-  let rec board_to_number_aux acc = function
-    | [] -> (2 * acc) + color_to_number board.color
-    | h :: t ->
-        let b = Board.get_bitboard board h in
-        let n = Bitboard.get_lsb b in
-        board_to_number_aux ((64 * acc) + n) t
-  in
-  board_to_number_aux 0
-    ((Board.K, Board.White) :: (Board.K, Board.Black) :: pieces)
-
-let number_to_board _num _pieces = failwith "Not implemented"
-*)
-
 (* Renvoie un indice entre 0 et 2^(9 + pieces*6 + 1) *)
 let board_to_number (board : Board.chessboard) pieces =
   let rec aux acc king_square = function

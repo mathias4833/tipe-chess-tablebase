@@ -17,6 +17,7 @@ let save_to_image table pieces height width =
       else Image.set_pixel img i j (Pixel.v rgb [ 1.0; 0.0; 0.0 ])
     done
   done;
+
   Printf.printf "Positions gagnantes: %i, Densite: %f\n" !counter
     (float_of_int !counter /. float_of_int (height * width));
   Stb.write_png "out.png" img
