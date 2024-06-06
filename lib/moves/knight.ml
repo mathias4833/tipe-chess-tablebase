@@ -1,7 +1,8 @@
 open Int64
 open Utils
 
-(* Table des coups possibles *)
+(** [table_move] crée une table de bitboards représentant les cases attaquées par un cavalier depuis chaque position sur l'échiquier.
+    @return Un tableau de 64 bitboards. *)
 let table_move =
   let create_table_move n =
     let i, j = Bitboard.coord_of_index n in
@@ -19,7 +20,9 @@ let table_move =
   in
   Array.init 64 create_table_move
 
-(* Genere l'ensemble des coups pour le cavalier *)
+(** [generate_moves chessboard] génère les coups possibles pour tous les cavaliers.
+    @param chessboard Le plateau d'échecs.
+    @return Liste des coups possibles pour les cavalier. *)
 let generate_moves chessboard =
   let ally = Board.get_ally_board chessboard in
   let rec generate_moves_aux acc = function
@@ -34,6 +37,10 @@ let generate_moves chessboard =
   in
   generate_moves_aux [] (Board.get_ally_bitboard chessboard N)
 
+(** [generate_unmoves chessboard pieces] génère les annulations de coups possibles pour tous les cavaliers.
+    @param chessboard Le plateau d'échecs.
+    @param pieces Liste des pieces présentes sur le plateau.
+    @return Liste des annulations de coups possibles pour les cavaliers. *)
 let generate_unmoves chessboard pieces =
   let whole = Board.get_whole_board chessboard in
   let rec generate_unmoves_aux acc = function

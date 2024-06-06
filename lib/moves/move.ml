@@ -1,6 +1,11 @@
 open Utils
 
-(* Ajoute l'ensemble des coups du bitboard dans la liste des coups possibles *)
+(** [add_moves_to_list p n bitboard acc] ajoute l'ensemble des coups possibles dans la liste des coups.
+    @param p La pièce concernée par le coup.
+    @param n L'indice de la position de la pièce sur l'échiquier.
+    @param bitboard Le bitboard représentant les positions possibles de la pièce.
+    @param acc La liste de coups actuelle.
+    @return La liste de coups mise à jour avec les nouveaux coups possibles. *)
 let rec add_moves_to_list p n bitboard acc =
   match bitboard with
   | 0L -> acc
@@ -9,6 +14,14 @@ let rec add_moves_to_list p n bitboard acc =
         (Bitboard.pop_lsb bitboard)
         (Board.Chessmove (p, n, Bitboard.get_lsb bitboard, None) :: acc)
 
+(** [add_unmoves_to_list p n acc board pieces bitboard] ajoute l'ensemble des annulations de coups possibles dans la liste des coups.
+    @param p La pièce concernée par le coup.
+    @param n L'indice de la position d'arrivée du coup sur l'échiquier.
+    @param acc La liste d'annulations de coups actuelle.
+    @param board Le plateau d'échecs.
+    @param pieces La liste des pièces sur l'échiquier.
+    @param bitboard Le bitboard représentant les positions possibles de départ du coup.
+    @return La liste mise à jour avec les nouvelles annulations de coups possibles. *)
 let rec add_unmoves_to_list p n acc board pieces = function
   | 0L -> acc
   | b ->
@@ -25,7 +38,10 @@ let rec add_unmoves_to_list p n acc board pieces = function
         (Board.Chessmove (p, from, n, None) :: (moves @ acc))
         board pieces (Bitboard.pop_lsb b)
 
-(* Joue le coup et renvoie la nouvelle position *)
+(** [play_move chessboard move] execute d'un coup sur le plateau d'échecs.
+    @param chessboard Le plateau d'échecs actuel.
+    @param move Le coup à jouer.
+    @return Le nouveau plateau d'échecs après l'exécution du coup. *)
 let play_move (chessboard : Board.chessboard) (move : Board.chessmove) =
   match (move, chessboard.color) with
   | ShortCastling, White ->
@@ -121,6 +137,10 @@ let play_move (chessboard : Board.chessboard) (move : Board.chessmove) =
             bcastle = false;
           })
 
+(** [play_unmove chessboard coup] simule l'annulation d'un coup sur le plateau d'échecs.
+    @param chessboard Le plateau d'échecs actuel.
+    @param coup Le coup à annuler.
+    @return Le nouveau plateau d'échecs après l'annulation du coup. *)
 let play_unmove chessboard = function
   | Board.Chessmove (p, n_from, n_to, oq) -> (
       let board =
@@ -134,7 +154,9 @@ let play_unmove chessboard = function
       | Some q -> Board.set_bitboard board (Bitboard.set_nth 0L n_to) q)
   | _ -> failwith "Cas impossible"
 
-(* Affiche la liste des coups possibles *)
+(** [print_moves board moves] affiche les plateaux d'échecs après l'exécution de chaque coup.
+    @param board Le plateau d'échecs initial.
+    @param moves La liste des coups à jouer. *)
 let rec print_moves board moves =
   match moves with
   | [] -> ()

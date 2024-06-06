@@ -1,7 +1,10 @@
 open Int64
 open Utils
 
-(* Genere le masque associe aux coordonnees i j, cases au bord inclues *)
+(** [generate_mask i j] génère un bitboard représentant les cases attaquées par une tour à une position donnée.
+    @param i Ligne de la tour (entre 0 et 7).
+    @param j Colonne de la tour (entre 0 et 7).
+    @return Le bitboard représentant les cases attaquées par la reine. *)
 let generate_mask i j =
   let n = (8 * i) + j in
   let mask = ref 0L in
@@ -21,7 +24,8 @@ let generate_mask i j =
   if j != 7 then mask := logand !mask (lognot (shift_left Bitboard.column 7));
   !mask
 
-(* Cree la table des masques (tableau de generate_mask i j) *)
+(** [table_mask] crée une table de bitboards représentant les cases attaquées par une tour depuis chaque position sur l'échiquier.
+    @return Un tableau de 64 bitboards. *)
 let table_mask =
   let create_table_mask n =
     let i, j = Bitboard.coord_of_index n in
@@ -47,6 +51,11 @@ let generate_blockers_from_nearest i j l1 l2 c1 c2 =
   !blockers
 
 (* Genere l'ensemble des positions avec des bloqueurs, pour une case donnee *)
+
+(** [generate_blockers i j] génère une liste de bitboards représentant les positions bloquées par des pièces ennemies.
+    @param i Ligne de la tour.
+    @param j Colonne de la tour.
+    @return Une liste de tuples (bitboard représentant les cases accessibles, liste de bitboards représentant les positions des bloqueurs *)
 let generate_blockers i j =
   let mask = table_mask.(Bitboard.index_of_coord i j) in
   let blockers_list = ref [] in
@@ -93,7 +102,8 @@ let generate_blockers i j =
 
   !blockers_list
 
-(* Creation d'un tableau de dictionnaires contenant positions accessible *)
+(** [table_moves] crée un tableau de dictionnaires associant les bitboards des bloqueurs aux bitboards des cases accessibles.
+    @return Un tableau de 64 dictionnaires. *)
 let table_moves =
   (* Cree le dictionnaire bloqueurs / cases accessibles *)
   let create_hashmap n =
@@ -120,17 +130,24 @@ let table_moves =
   in
   Array.init 64 create_hashmap
 
-(* Genere l'ensemble des positions accessibles pour une tour a l'indice n *)
+(** [moves_from_board ally whole n] génère les coups possibles pour une case donnée.
+    @param ally Bitboard des pièces alliées.
+    @param whole Bitboard des pièces sur tout le plateau.
+    @param n Indice de la position de la tour sur l'échiquier (entre 0 et 63).
+    @return Bitboard des coups possibles pour la pièce. *)
 let moves_from_board ally whole n =
   (* Bitboard contenant l'ensemble des pieces bloquantes *)
   let blockerboard = logand whole table_mask.(n) in
   logand (Hashtbl.find table_moves.(n) blockerboard) (lognot ally)
 
-(* Genere l'ensemble des coups pour la tour *)
+(** [generate_moves chessboard] génère les coups possibles pour toutes les tours.
+    @param chessboard Le plateau d'échecs.
+    @return Liste des coups possibles pour les tours. *)
 let generate_moves chessboard =
   let ally = Board.get_ally_board chessboard in
   let whole = Board.get_whole_board chessboard in
 
+  (* Fonction auxiliaire pour parcourir l'ensemble des tours *)
   let rec generate_moves_aux board acc =
     match board with
     | 0L -> acc
@@ -143,10 +160,18 @@ let generate_moves chessboard =
   in
   generate_moves_aux (Board.get_ally_bitboard chessboard R) []
 
+(** [unmoves_from_board whole n] génère les annulations de coups possibles pour une case donnée.
+    @param whole Bitboard des pièces sur tout le plateau.
+    @param n Indice de la position de la tour sur l'échiquier (entre 0 et 63).
+    @return Bitboard des annulations de coups possibles pour la pièce. *)
 let unmoves_from_board whole n =
   let blockerboard = logand whole table_mask.(n) in
   logand (Hashtbl.find table_moves.(n) blockerboard) (lognot whole)
 
+(** [generate_unmoves chessboard pieces] génère les annulations de coups possibles pour toutes les tours.
+    @param chessboard Le plateau d'échecs.
+    @param pieces Liste des pieces présentes sur le plateau.
+    @return Liste des annulations de coups possibles pour les tours. *)
 let generate_unmoves chessboard pieces =
   let whole = Board.get_whole_board chessboard in
   let rec generate_unmoves_aux acc = function

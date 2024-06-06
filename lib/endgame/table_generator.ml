@@ -1,7 +1,9 @@
 open Utils
 open Moves
 
-(* Genere l'ensemble des positions de mats avec deux rois et une tour *)
+(** [generate_mates pieces] génère toutes les positions de mat possibles à partir d'une configuration donnée.
+    @param pieces La liste des pièces présentes sur le plateau.
+    @return Une liste de positions où le joueur actif est en échec et ne peut effectuer aucun coup légal. *)
 let generate_mates pieces =
   let rec generate_all_positions acc = function
     | [] ->
@@ -28,6 +30,14 @@ let generate_mates pieces =
     ((Board.K, Board.White) :: (Board.K, Board.Black) :: pieces)
 
 (* Ajoute la position si elle n'est pas deja présente *)
+
+(** [add_unmove table pieces board m i] ajoute le coup a la table si il n'a pas été vu.
+    @param table Table de fin de partie
+    @param pieces Liste des pièces présentes sur le plateau.
+    @param board Plateau d'échecs avant le coup.
+    @param m Coup à annuler.
+    @param i Profondeur du coup dans l'arbre de jeu.
+    @return Optionnellement, le plateau après l'annulation du coup, si le coup a été ajouté avec succès. *)
 let add_unmove table pieces (board : Board.chessboard) (m : Board.chessmove) i =
   let board_prev = Move.play_unmove board m in
   let norm_board = Transformations.normalize_board board_prev pieces in
@@ -57,7 +67,10 @@ let add_unmove table pieces (board : Board.chessboard) (m : Board.chessmove) i =
     else None
   else None
 
-(* Genere les tables pour le jeu de pieces jusqu'au mat en n demi-coups *)
+(** [generate_endgames pieces n] génère les positions de fin de partie jusqu'à une profondeur donnée.
+    @param pieces Liste des pièces présentes sur le plateau.
+    @param n Profondeur maximale de recherche.
+    @return Le tableau de fin de partie généré. *)
 let generate_endgames pieces n =
   Printf.printf "Creation du tableau\n%!";
   let file_descr, table = Serializer.open_table pieces in

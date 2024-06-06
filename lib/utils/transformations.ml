@@ -1,10 +1,3 @@
-type transformation =
-  | Symmetry
-  | Rotation
-  | Transformation of transformation * transformation
-
-let ( << ) f g x = f (g x)
-
 let transform_bitboard f b =
   let rec aux acc = function
     | 0L -> acc
@@ -34,26 +27,10 @@ let transform_board f (b : Board.chessboard) =
     bking = transform_bitboard f b.bking;
   }
 
-let transform_move f = function
-  | Board.Chessmove (p, n, m, q) ->
-      let ni, nj = f (Bitboard.coord_of_index n) in
-      let mi, mj = f (Bitboard.coord_of_index m) in
-      let tn = Bitboard.index_of_coord ni nj in
-      let tm = Bitboard.index_of_coord mi mj in
-      Board.Chessmove (p, tn, tm, q)
-  | m -> m
-
-(* Tourne le bitboard de pi/2 *)
+(* Operations de transformation *)
 let rotate_counterclockwise (i, j) = (j, 7 - i)
-
-(* Tourne le bitboard de -pi/2 *)
 let rotate_clockwise (i, j) = (7 - j, i)
-
-(* Effectue une symetrie verticale *)
-let flip_vertical (i, j) = (i, 7 - j)
 let flip_horizontal (i, j) = (7 - i, j)
-
-(* Effectue une symetrie diagonale *)
 let flip_diagonal (i, j) = (j, i)
 let flip_antidiagonal (i, j) = (7 - j, 7 - i)
 

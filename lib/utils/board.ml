@@ -88,16 +88,32 @@ let study_board =
     bcastle = false;
   }
 
+(** [is_white board] vérifie si le joueur associé au plateau de jeu est blanc.
+    @param board Le plateau de jeu à vérifier.
+    @return true si le joueur est blanc, false sinon. *)
 let is_white board = board.color = White
+
+(** [change_color color] inverse la couleur donnée.
+    @param color La couleur à inverser.
+    @return La couleur opposée à celle donnée. *)
 let change_color = function White -> Black | Black -> White
 
-(* Renvoie a si c'est au blanc de jouer, b sinon *)
+(** [if_w_else board a b] exécute l'expression [a] si la couleur du plateau est blanche, sinon exécute l'expression [b].
+    @param board Le plateau de jeu.
+    @param a Expression à exécuter si la couleur est blanche.
+    @param b Expression à exécuter si la couleur n'est pas blanche.
+    @return Résultat de l'expression exécutée. *)
 let if_w_else board a b = match board.color with White -> a | _ -> b
 
-(* Change le trait *)
+(** [change_turn board] change la couleur du plateau pour passer au tour du joueur suivant.
+    @param board Le plateau de jeu actuel.
+    @return Le plateau de jeu avec la couleur mise à jour pour le tour suivant. *)
 let change_turn board = { board with color = change_color board.color }
 
-(* Renvoie le bitboard associé à la piece *)
+(** [get_bitboard board piece_color] récupère le bitboard correspondant à la couleur et au type de pièce spécifiés sur le plateau donné.
+    @param board Le plateau de jeu.
+    @param piece_color La couleur de la pièce (White ou Black).
+    @return Le bitboard correspondant à la couleur et au type de pièce spécifiés. *)
 let get_bitboard board = function
   | P, White -> board.wpawns
   | B, White -> board.wbishops
@@ -112,12 +128,22 @@ let get_bitboard board = function
   | Q, Black -> board.bqueen
   | K, Black -> board.bking
 
+(** [get_ally_bitboard board piece] récupère le bitboard des pièces alliées du type spécifié sur le plateau donné.
+    @param board Le plateau de jeu.
+    @param piece Le type de pièce (P, B, N, R, Q, K).
+    @return Le bitboard des pièces alliées du type spécifié. *)
 let get_ally_bitboard board piece = get_bitboard board (piece, board.color)
 
+(** [get_enemy_bitboard board piece] récupère le bitboard des pièces ennemies du type spécifié sur le plateau donné.
+    @param board Le plateau de jeu.
+    @param piece Le type de pièce (P, B, N, R, Q, K).
+    @return Le bitboard des pièces ennemies du type spécifié. *)
 let get_enemy_bitboard board piece =
   get_bitboard board (piece, change_color board.color)
 
-(* Renvoie le bitboard de l'ensemble des pieces amies *)
+(** [get_ally_board board] récupère le bitboard de toutes les pièces alliées sur le plateau donné.
+    @param board Le plateau de jeu.
+    @return Le bitboard de toutes les pièces alliées. *)
 let get_ally_board board =
   List.fold_left logor 0L
     [
@@ -129,13 +155,18 @@ let get_ally_board board =
       get_ally_bitboard board K;
     ]
 
-(* Renvoie le bitboard de l'ensemble des pieces ennemies *)
+(** [get_enemy_board board] récupère le bitboard de toutes les pièces ennemies sur le plateau donné.
+    @param board Le plateau de jeu.
+    @return Le bitboard de toutes les pièces ennemies. *)
 let get_enemy_board board = get_ally_board (change_turn board)
 
-(* Renvoie le bitboard de l'ensemble des pieces de l'echiquier *)
+(** [get_whole_board board] récupère le bitboard de toutes les pièces sur le plateau donné.
+    @param board Le plateau de jeu.
+    @return Le bitboard de toutes les pièces présentes sur le plateau. *)
 let get_whole_board board = logor (get_ally_board board) (get_enemy_board board)
 
-(* Print l'echiquier complet *)
+(** [print_board board] affiche un plateau de jeu.
+    @param board le plateau de jeu à afficher. *)
 let print_board board =
   let rec print_case i j =
     let n = Bitboard.index_of_coord i j in
@@ -171,7 +202,12 @@ let print_board board =
     (" - - - - - - - -\n" ^ print_board_aux 7 "" ^ " - - - - - - - -");
   flush stdout
 
-(* Modifie le bitboard associé à la piece p *)
+(** [set_bitboard board bitboard piece color] définit le bitboard des pièces d'un certain type et couleur.
+    @param board Le plateau de jeu.
+    @param bitboard Le bitboard à définir.
+    @param piece Le type de pièce.
+    @param color La couleur de la pièce.
+    @return Le plateau de jeu avec le bitboard mis à jour. *)
 let set_bitboard board b = function
   | P, White -> { board with wpawns = b }
   | B, White -> { board with wbishops = b }
@@ -186,7 +222,10 @@ let set_bitboard board b = function
   | Q, Black -> { board with bqueen = b }
   | K, Black -> { board with bking = b }
 
-(* Renvoie l'ensemble des positions possibles en ajoutant une piece précise *)
+(** [add_piece board piece] ajoute une pièce de jeu donnée au plateau, générant toutes les configurations possibles résultantes.
+    @param board Le plateau de jeu.
+    @param piece La pièce de jeu à ajouter.
+    @return La liste des plateaux de jeu obtenus après avoir ajouté la pièce donnée. *)
 let add_piece board (piece : colored_chesspiece) =
   let rec aux acc = function
     | i when i > 63 -> List.map (fun b -> set_bitboard board b piece) acc

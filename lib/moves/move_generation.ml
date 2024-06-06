@@ -1,6 +1,8 @@
 open Utils
 
-(* Genere l'ensemble des coups legaux *)
+(** [generate_legal_moves board] génère la liste des coups légaux possibles.
+    @param board Le plateau d'échecs actuel.
+    @return La liste des coups légaux possibles. *)
 let generate_legal_moves board =
   let rec remove_illegal_moves acc = function
     | [] -> acc
@@ -21,7 +23,10 @@ let generate_legal_moves board =
       Castling.generate_moves board;
     ]
 
-(* Genere l'ensemble des coups legaux qui auraient pu etre joué avant *)
+(** [generate_legal_unmoves board pieces] génère la liste des annulations de coups légaux possibles.
+    @param board Le plateau d'échecs actuel.
+    @param pieces La liste des pièces sur le plateau.
+    @return La liste des annulations de coups légaux possibles. *)
 let generate_legal_unmoves board pieces =
   let rec remove_illegal_unmoves acc = function
     | [] -> acc

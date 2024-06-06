@@ -1,7 +1,8 @@
 open Int64
 open Utils
 
-(* Table des coups possible par prise *)
+(** [table_wtake] crée une table de bitboards représentant les cases attaquées par un pion blanc depuis chaque position sur l'échiquier.
+    @return Un tableau de 64 bitboards. *)
 let table_wtake =
   let create_table_capture n =
     let i, j = Bitboard.coord_of_index n in
@@ -9,6 +10,8 @@ let table_wtake =
   in
   Array.init 64 create_table_capture
 
+(** [table_btake] crée une table de bitboards représentant les cases attaquées par un pion noir depuis chaque position sur l'échiquier.
+    @return Un tableau de 64 bitboards. *)
 let table_btake =
   let create_table_capture n =
     let i, j = Bitboard.coord_of_index n in
@@ -16,7 +19,8 @@ let table_btake =
   in
   Array.init 64 create_table_capture
 
-(* Table des coups possible sans prise *)
+(** [table_wmove] crée une table de bitboards représentant les cases accessible en avancant par un pion blanc depuis chaque position sur l'échiquier.
+    @return Un tableau de 64 bitboards. *)
 let table_wmove =
   let create_table_move n =
     let i, j = Bitboard.coord_of_index n in
@@ -24,6 +28,8 @@ let table_wmove =
   in
   Array.init 64 create_table_move
 
+(** [table_bmove] crée une table de bitboards représentant les cases accessible en avancant par un pion noir depuis chaque position sur l'échiquier.
+    @return Un tableau de 64 bitboards. *)
 let table_bmove =
   let create_table_move n =
     let i, j = Bitboard.coord_of_index n in
@@ -31,17 +37,21 @@ let table_bmove =
   in
   Array.init 64 create_table_move
 
-(* Renvoie le bitboard des coups possibles en avancant *)
-let get_move_board (color : Board.color) whole n =
+(** [get_move_board color whole n] génère les coups possibles pour une case donnee.
+    @param color La couleur du pion (White ou Black).
+    @param whole Bitboard des pièces sur tout le plateau.
+    @param n Indice de la position du pion sur l'échiquier (entre 0 et 63).
+    @return Bitboard des coups possibles pour la pièce. *)
+let get_move_board color whole n =
   let moveboard =
     match color with
-    | White ->
+    | Board.White ->
         let defaultmove = table_wmove.(n) in
         (* Verifie si le pion blanc peut avancer de deux cases *)
         if 7 < n && n < 16 && logand defaultmove whole = 0L then
           logor defaultmove table_wmove.(n + 8)
         else defaultmove
-    | Black ->
+    | Board.Black ->
         let defaultmove = table_bmove.(n) in
         (* Verifie si le pion noir peut avancer de deux cases *)
         if 47 < n && n < 56 && logand defaultmove whole = 0L then
@@ -50,7 +60,9 @@ let get_move_board (color : Board.color) whole n =
   in
   logand moveboard (lognot whole)
 
-(* Genere l'ensemble des coups pour les pions *)
+(** [generate_moves chessboard] génère les coups possibles pour tous les pions.
+    @param chessboard Le plateau d'échecs.
+    @return Liste des coups possibles pour les pions. *)
 let generate_moves chessboard =
   let enemy = Board.get_enemy_board chessboard in
   let whole = Board.get_whole_board chessboard in

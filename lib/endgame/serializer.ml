@@ -1,7 +1,11 @@
 open Bigarray
 open Utils
 
+(** [open_table pieces] ouvre et initialise une table de fin de partie.
+    @param pieces Liste des pièces présentes.
+    @return (descripteur de fichier, table mappee). *)
 let open_table pieces =
+  (* Calcul de la taille de la table en fonction du nombre de pieces *)
   let size = 462 * (1 lsl (6 * List.length pieces)) * 2 in
   let file_descr =
     Unix.openfile "endgame.table"
@@ -12,45 +16,26 @@ let open_table pieces =
   Genarray.fill table 0;
   (file_descr, array1_of_genarray table)
 
+(** [close_table file_descr] ferme le fichier associe au descripteur [file_descr].
+    @param file_descr Descripteur de fichier à fermer. *)
 let close_table file_descr = Unix.close file_descr
 
-(* Associe chaque piece a un entier, pour avoir un ordre *)
-let piece_to_number = function
-  | Board.K, Board.White -> 0
-  | Board.K, Board.Black -> 1
-  | Board.Q, Board.White -> 2
-  | Board.Q, Board.Black -> 3
-  | Board.R, Board.White -> 4
-  | Board.R, Board.Black -> 5
-  | Board.B, Board.White -> 6
-  | Board.B, Board.Black -> 7
-  | Board.N, Board.White -> 8
-  | Board.N, Board.Black -> 9
-  | Board.P, Board.White -> 10
-  | Board.P, Board.Black -> 11
-
-let number_to_piece = function
-  | 0 -> (Board.K, Board.White)
-  | 1 -> (Board.K, Board.Black)
-  | 2 -> (Board.Q, Board.White)
-  | 3 -> (Board.Q, Board.Black)
-  | 4 -> (Board.R, Board.White)
-  | 5 -> (Board.R, Board.Black)
-  | 6 -> (Board.B, Board.White)
-  | 7 -> (Board.B, Board.Black)
-  | 8 -> (Board.N, Board.White)
-  | 9 -> (Board.N, Board.Black)
-  | 10 -> (Board.P, Board.White)
-  | 11 -> (Board.P, Board.Black)
-  | _ -> failwith "Indice de la piece invalide"
-
+(** [color_to_number color] convertit une couleur en nombre.
+    @param color La couleur à convertir ([Board.White] ou [Board.Black]).
+    @return 1 pour [Board.White], 0 pour [Board.Black]. *)
 let color_to_number = function Board.White -> 1 | Black -> 0
 
+(** [number_to_color n] convertit un nombre en couleur.
+    @param n Le nombre à convertir (1 ou 0).
+    @return [Board.White] pour 1, [Board.Black] pour 0, sinon échoue. *)
 let number_to_color = function
   | 1 -> Board.White
   | 0 -> Board.Black
   | _ -> failwith "Indice invalide"
 
+(** [white_king_to_number n] convertit une position d'un roi en sa position relative dans le cadrant inferieur gauche.
+    @param n L'indice du roi (entre 0 et 63).
+    @return L'indice du roi dans le cadrant, entre 0 et 9. Echoue si le roi n'est pas dans le cadrant. *)
 let white_king_to_number = function
   | 0 -> 0
   | 1 -> 1
@@ -64,6 +49,9 @@ let white_king_to_number = function
   | 27 -> 9
   | _ -> failwith "Indice invalide"
 
+(** [number_to_white_king n] convertit une position relative d'un roi dans le cadrant inférieur gauche en sa position absolue.
+    @param n L'indice du roi dans le cadrant (entre 0 et 9).
+    @return L'indice du roi absolu (entre 0 et 63). Echoue si l'indice est invalide. *)
 let number_to_white_king = function
   | 0 -> 0
   | 1 -> 1
@@ -78,6 +66,13 @@ let number_to_white_king = function
   | _ -> failwith "Indice invalide"
 
 (* Associe les deux rois a un indice entre 0 et 461 *)
+
+(** [kings_lookup_table] crée une table d'association d'un indice (entre 0 et 461) a la position des deux rois sur l'échiquier.
+    Associe un indice à la position des deux rois sur l'échiquier, en ne considérant que les positions 
+    dans le quadrant inférieur gauche où le roi blanc est placé.
+    @return Un tuple de deux matrices d'indices:
+            - La première matrice associe a la position des deux rois un indice
+            - La deuxième matrice associe a un indice la position des deux rois *)
 let kings_lookup_table =
   let index_of_couple = Array.make_matrix 10 64 (-1) in
   let couple_of_index = Array.make 462 (-1, -1) in
@@ -96,13 +91,23 @@ let kings_lookup_table =
   done;
   (index_of_couple, couple_of_index)
 
+(** [kings_index_of_couple i j] retourne l'indice associé à une paire de positions de rois.
+    @param i Indice de la position du roi blanc.
+    @param j Indice de la position du roi noir.
+    @return L'indice associé à la paire de positions de rois. *)
 let kings_index_of_couple i j =
   let n = white_king_to_number i in
   (fst kings_lookup_table).(n).(j)
 
+(** [kings_couple_of_index n] retourne la paire de positions de rois associée à un indice.
+    @param n L'indice associé à la paire de positions de rois.
+    @return La paire de positions de rois associée à l'indice [n]. *)
 let kings_couple_of_index n = (snd kings_lookup_table).(n)
 
-(* Renvoie un indice entre 0 et 2^(9 + pieces*6 + 1) *)
+(** [board_to_number board pieces] convertit une configuration de plateau en un indice unique.
+    @param board Le plateau d'échecs.
+    @param pieces La liste des pièces présentes sur le plateau.
+    @return Un indice unique représentant la configuration du plateau, entre 0 et 462*64^(pieces)*2 *)
 let board_to_number (board : Board.chessboard) pieces =
   let rec aux acc king_square = function
     | [] -> (2 * acc) + color_to_number board.color
@@ -115,6 +120,10 @@ let board_to_number (board : Board.chessboard) pieces =
   let m = Bitboard.get_lsb (Board.get_bitboard board (Board.K, Board.Black)) in
   aux (kings_index_of_couple n m) n pieces
 
+(** [number_to_board num pieces] convertit un indice en une configuration de plateau.
+    @param num L'indice représentant la configuration du plateau.
+    @param pieces La liste des pièces présentes sur le plateau.
+    @return Le plateau d'échecs correspondant à l'indice donné. *)
 let number_to_board num pieces =
   let rec add_pieces acc num king_square = function
     | [] -> acc

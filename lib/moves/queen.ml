@@ -1,7 +1,9 @@
 open Int64
 open Utils
 
-(* Genere l'ensemble des coups pour la dame *)
+(** [generate_moves chessboard] génère les coups possibles pour toutes les dames.
+    @param chessboard Le plateau d'échecs.
+    @return Liste des coups possibles pour les dames. *)
 let generate_moves chessboard =
   let ally = Board.get_ally_board chessboard in
   let whole = Board.get_whole_board chessboard in

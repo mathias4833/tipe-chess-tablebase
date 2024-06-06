@@ -1,7 +1,10 @@
 open Int64
 open Utils
 
-(* Genere le masque d'un fou en i j *)
+(** [generate_mask i j] génère un bitboard représentant les cases attaquées par un fou à une position donnée.
+    @param i Ligne du fou (entre 0 et 7).
+    @param j Colonne du fou (entre 0 et 7).
+    @return Le bitboard représentant les cases attaquées par la reine. *)
 let generate_mask i j =
   let pos = 1L in
   let mask = ref 0L in
@@ -21,7 +24,8 @@ let generate_mask i j =
   done;
   !mask
 
-(* Cree le tableau des masques pour toutes les positions possibles *)
+(** [table_mask] crée une table de bitboards représentant les cases attaquées par un fou depuis chaque position sur l'échiquier.
+    @return Un tableau de 64 bitboards. *)
 let table_mask =
   let create_table_mask n =
     let i, j = Bitboard.coord_of_index n in
@@ -29,7 +33,14 @@ let table_mask =
   in
   Array.init 64 create_table_mask
 
-(* Fonction auxiliaire qui ajoute tous les bloqueurs derrieres ceux donne en entree *)
+(** [generate_blockers_from_nearest i j dhd dhg dbd dbg] génère un bitboard contenant les cases bloquées par les pieces les plus proches.
+    @param i Ligne du fou.
+    @param j Colonne du fou.
+    @param dhd Distance à la diagonale haute droite.
+    @param dhg Distance à la diagonale haute gauche.
+    @param dbd Distance à la diagonale basse droite.
+    @param dbg Distance à la diagonale basse gauche.
+    @return Le bitboard représentant les cases bloquées. *)
 let generate_blockers_from_nearest i j dhd dhg dbd dbg =
   let blockers = ref 0L in
   for n = dhg + 1 to 6 do
@@ -46,7 +57,10 @@ let generate_blockers_from_nearest i j dhd dhg dbd dbg =
   done;
   !blockers
 
-(* Genere l'ensemble des positions avec des bloqueurs, pour une case donnee *)
+(** [generate_blockers i j] génère une liste de bitboards représentant les positions bloquées par des pièces ennemies.
+    @param i Ligne du fou.
+    @param j Colonne du fou.
+    @return Une liste de tuples (bitboard représentant les cases accessibles, liste de bitboards représentant les positions des bloqueurs *)
 let generate_blockers i j =
   let mask = table_mask.(Bitboard.index_of_coord i j) in
   let blockers_list = ref [] in
@@ -99,16 +113,14 @@ let generate_blockers i j =
 
   !blockers_list
 
-(* Creation d'un tableau de dictionnaires contenant positions accessible *)
+(** [table_moves] crée un tableau de dictionnaires associant les bitboards des bloqueurs aux bitboards des cases accessibles.
+    @return Un tableau de 64 dictionnaires. *)
 let table_moves =
   (* Cree le dictionnaire bloqueurs / cases accessibles *)
   let create_hashmap n =
     let i = n / 8 and j = n mod 8 in
     let all_blockers = generate_blockers i j in
-    (* Ensemble des bloqueurs *)
     let hashmap = Hashtbl.create 1024 in
-
-    (* Dictionnaire vide *)
 
     (* A chaque bloqueur on associe le bitboard des cases accesibles *)
     let rec aux1 l accessible hashmap =
@@ -126,13 +138,19 @@ let table_moves =
   in
   Array.init 64 create_hashmap
 
-(* Genere l'ensemble des positions accessibles pour un fou a l'indice n *)
+(** [moves_from_board ally whole n] génère les coups possibles pour une case donnée.
+    @param ally Bitboard des pièces alliées.
+    @param whole Bitboard des pièces sur tout le plateau.
+    @param n Indice de la position du fou sur l'échiquier (entre 0 et 63).
+    @return Bitboard des coups possibles pour la pièce. *)
 let moves_from_board ally whole n =
   (* Bitboard contenant l'ensemble des pieces bloquantes *)
   let blockerboard = logand whole table_mask.(n) in
   logand (Hashtbl.find table_moves.(n) blockerboard) (lognot ally)
 
-(* Genere l'ensemble des coups pour le fou *)
+(** [generate_moves chessboard] génère les coups possibles pour tous les fous.
+    @param chessboard Le plateau d'échecs.
+    @return Liste des coups possibles pour les fous. *)
 let generate_moves chessboard =
   let ally = Board.get_ally_board chessboard in
   let whole = Board.get_whole_board chessboard in
@@ -150,11 +168,18 @@ let generate_moves chessboard =
   in
   generate_moves_aux (Board.get_ally_bitboard chessboard Board.B) []
 
-(* Genere l'ensemble des coups ayant pu etre joué avant *)
+(** [unmoves_from_board whole n] génère les annulations de coups possibles pour une case donnée.
+    @param whole Bitboard des pièces sur tout le plateau.
+    @param n Indice de la position du fou sur l'échiquier (entre 0 et 63).
+    @return Bitboard des annulations de coups possibles pour la pièce. *)
 let unmoves_from_board whole n =
   let blockerboard = logand whole table_mask.(n) in
   logand (Hashtbl.find table_moves.(n) blockerboard) (lognot whole)
 
+(** [generate_unmoves chessboard pieces] génère les annulations de coups possibles pour tous les fous.
+    @param chessboard Le plateau d'échecs.
+    @param pieces Liste des pieces présentes sur le plateau.
+    @return Liste des annulations de coups possibles pour les fous. *)
 let generate_unmoves chessboard pieces =
   let whole = Board.get_whole_board chessboard in
 

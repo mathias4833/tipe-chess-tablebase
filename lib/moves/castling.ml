@@ -1,6 +1,8 @@
 open Utils
 
-(* Genere les coups de roque si possible *)
+(** [generate_moves chessboard] génère les coups de roques possibles
+    @param chessboard Le plateau d'échecs.
+    @return Liste des roques possibles (petit ou grand roque). *)
 let generate_moves (chessboard : Board.chessboard) =
   if Board.is_white chessboard then
     (* Le roi n'a pas encore bouge *)
