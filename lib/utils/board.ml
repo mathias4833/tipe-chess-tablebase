@@ -202,6 +202,16 @@ let print_board board =
     (" - - - - - - - -\n" ^ print_board_aux 7 "" ^ " - - - - - - - -");
   flush stdout
 
+(** [print_list_board l] affiche une liste d'echiquiers.
+    @param l La liste d'echiquier à afficher. *)
+let rec print_list_board l =
+  match l with
+  | [] -> ()
+  | h :: t ->
+      print_board h;
+      print_string "\n";
+      print_list_board t
+
 (** [set_bitboard board bitboard piece color] définit le bitboard des pièces d'un certain type et couleur.
     @param board Le plateau de jeu.
     @param bitboard Le bitboard à définir.

@@ -76,8 +76,7 @@ let generate_endgames pieces n =
   let file_descr, table = Serializer.open_table pieces in
 
   let rec aux acc = function
-    | i when i > n ->
-        Printf.printf "--> %i\n%!" (List.length acc);
+    | i when i > n || List.length acc = 0 ->
         Serializer.close_table file_descr;
         table
     | i ->

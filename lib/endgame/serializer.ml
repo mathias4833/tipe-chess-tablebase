@@ -126,7 +126,7 @@ let board_to_number (board : Board.chessboard) pieces =
     @return Le plateau d'échecs correspondant à l'indice donné. *)
 let number_to_board num pieces =
   let rec add_pieces acc num king_square = function
-    | [] -> acc
+    | [] -> Transformations.normalize_board acc pieces
     | h :: t ->
         let q = num / 64 in
         let r = num mod 64 in
