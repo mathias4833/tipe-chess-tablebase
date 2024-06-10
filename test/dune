@@ -1,2 +1,3 @@
 (test
- (name chess_engine))
+ (name chess_engine)
+ (libraries utils moves))

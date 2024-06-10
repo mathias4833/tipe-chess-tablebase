@@ -1,5 +1,19 @@
 open Utils
 
+let update_castling_rights_after_rook_move (board : Board.chessboard) color piece n_from =
+  match (piece, color, n_from) with
+  | Board.R, Board.White, 0 | Board.R, Board.White, 7 ->
+      { board with wcastle = false }
+  | Board.R, Board.Black, 56 | Board.R, Board.Black, 63 ->
+      { board with bcastle = false }
+  | _ -> board
+
+let update_castling_rights_after_capture (board : Board.chessboard) captured_piece n_to =
+  match (captured_piece, n_to) with
+  | Some (Board.R, Board.White), (0 | 7) -> { board with wcastle = false }
+  | Some (Board.R, Board.Black), (56 | 63) -> { board with bcastle = false }
+  | _ -> board
+
 (** [add_moves_to_list p n bitboard acc] ajoute l'ensemble des coups possibles dans la liste des coups.
     @param p La pièce concernée par le coup.
     @param n L'indice de la position de la pièce sur l'échiquier.
@@ -58,7 +72,7 @@ let play_move (chessboard : Board.chessboard) (move : Board.chessmove) =
         (*Petit roque noir *)
         chessboard with
         bking = Bitboard.set_nth 0L 62;
-        brooks = Bitboard.set_nth (Bitboard.clear_nth chessboard.wrooks 63) 61;
+        brooks = Bitboard.set_nth (Bitboard.clear_nth chessboard.brooks 63) 61;
         color = White;
         bcastle = false;
       }
@@ -76,11 +90,11 @@ let play_move (chessboard : Board.chessboard) (move : Board.chessmove) =
         (* Grand roque noir *)
         chessboard with
         bking = Bitboard.set_nth 0L 58;
-        brooks = Bitboard.set_nth (Bitboard.clear_nth chessboard.wrooks 56) 59;
+        brooks = Bitboard.set_nth (Bitboard.clear_nth chessboard.brooks 56) 59;
         color = White;
         bcastle = false;
       }
-  | Chessmove (p, n_from, n_to, _), _ -> (
+  | Chessmove (p, n_from, n_to, oq), _ -> (
       (* Echiquier temporaire sans aucune piece sur la case d'arrivee et de depart *)
       let clear b = Bitboard.clear_nth (Bitboard.clear_nth b n_from) n_to in
       let tempboard =
@@ -100,6 +114,9 @@ let play_move (chessboard : Board.chessboard) (move : Board.chessmove) =
           bking = clear chessboard.bking;
           color = Board.change_color chessboard.color;
         }
+        |> fun board ->
+        update_castling_rights_after_rook_move board chessboard.color p n_from
+        |> fun board -> update_castling_rights_after_capture board oq n_to
       in
 
       (* On met la piece sur la case d'arrivee *)
@@ -151,7 +168,11 @@ let play_unmove chessboard = function
       in
       match oq with
       | None -> board
-      | Some q -> Board.set_bitboard board (Bitboard.set_nth 0L n_to) q)
+      | Some q ->
+          let restored =
+            Bitboard.set_nth (Board.get_bitboard board q) n_to
+          in
+          Board.set_bitboard board restored q)
   | _ -> failwith "Cas impossible"
 
 (** [print_moves board moves] affiche les plateaux d'échecs après l'exécution de chaque coup.

@@ -19,7 +19,7 @@ let coord_of_index n = (n / 8, n mod 8)
     @param x L'entier dont on veut extraire le n-ième bit.
     @param n L'indice du bit à récupérer.
     @return valeur du n-ieme bit (0 ou 1) *)
-let get_nth x n = logand (shift_right x n) 1L
+let get_nth x n = logand (shift_right_logical x n) 1L
 
 (** [set_nth x n] met à 1 le n-ieme bit d'un entier x.
     @param x L'entier dans lequel on veut définir le n-ième bit.
@@ -45,7 +45,7 @@ let get_lsb x =
   let rec get_lsb_aux x acc =
     match logand x 1L with
     | 1L -> acc
-    | _ -> get_lsb_aux (shift_right x 1) (acc + 1)
+    | _ -> get_lsb_aux (shift_right_logical x 1) (acc + 1)
   in
   match x with 0L -> 0 | _ -> get_lsb_aux x 0
 
@@ -55,8 +55,8 @@ let get_lsb x =
 let rec count_ones x =
   match x with
   | 0L -> 0
-  | x when logand x 1L = 1L -> 1 + count_ones (shift_right x 1)
-  | _ -> count_ones (shift_right x 1)
+  | x when logand x 1L = 1L -> 1 + count_ones (shift_right_logical x 1)
+  | _ -> count_ones (shift_right_logical x 1)
 
 (** [from_coordinate i j] crée un bitboard avec un seul bit positionné en (i, j).
     @param i L'indice de la ligne.
@@ -88,13 +88,13 @@ let print_board b =
   let rec line i b =
     match (i, b) with
     | i, _ when i < 0 -> "\n"
-    | _, b when logand b 1L = 1L -> "1" ^ line (i - 1) (shift_right b 1)
-    | _ -> "." ^ line (i - 1) (shift_right b 1)
+    | _, b when logand b 1L = 1L -> "1" ^ line (i - 1) (shift_right_logical b 1)
+    | _ -> "." ^ line (i - 1) (shift_right_logical b 1)
   (* Print le bitboard ligne par ligne *)
   and print_bitboard_aux i b =
     match (i, b) with
     | i, _ when i < 0 -> ""
-    | _ -> print_bitboard_aux (i - 1) (shift_right b 8) ^ line 7 b
+    | _ -> print_bitboard_aux (i - 1) (shift_right_logical b 8) ^ line 7 b
   in
   print_string ("--------\n" ^ print_bitboard_aux 7 b ^ "--------\n")
 

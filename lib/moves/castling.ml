@@ -51,7 +51,7 @@ let generate_moves (chessboard : Board.chessboard) =
     in
     (* Grand roque *)
     if
-      Bitboard.get_nth chessboard.wrooks 56 = 1L
+      Bitboard.get_nth chessboard.brooks 56 = 1L
       && Bitboard.get_nth whole 57 = 0L
       && Bitboard.get_nth whole 58 = 0L
       && Bitboard.get_nth whole 59 = 0L
