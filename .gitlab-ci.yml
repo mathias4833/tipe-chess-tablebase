@@ -1,0 +1,15 @@
+image: ocaml/opam:debian-12-ocaml-5.1
+
+stages:
+  - test
+
+variables:
+  OPAMYES: "true"
+
+test:
+  stage: test
+  before_script:
+    - opam install dune.3.6.2
+  script:
+    - opam exec -- dune build
+    - opam exec -- dune test
