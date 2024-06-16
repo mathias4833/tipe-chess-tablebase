@@ -5,7 +5,38 @@ open Moves
     @param pieces La liste des pièces présentes sur le plateau.
     @return Une liste de positions où le joueur actif est en échec et ne peut effectuer aucun coup légal. *)
 let generate_mates pieces =
-  let rec generate_all_positions acc = function
+  (* Compte le nombre d'occurrences d'une pièce déjà ajoutées au plateau. *)
+  let count_occurrences piece pieces =
+    List.fold_left
+      (fun count candidate -> if candidate = piece then count + 1 else count)
+      0 pieces
+  in
+  (* Vérifie que toutes les pièces d'un bitboard ont un indice inférieur à [square]. *)
+  let rec all_squares_before bitboard square =
+    match bitboard with
+    | 0L -> true
+    | b ->
+        let n = Bitboard.get_lsb b in
+        n < square && all_squares_before (Bitboard.pop_lsb b) square
+  in
+  (* Ajoute une occurrence en imposant un ordre aux pièces identiques afin
+     de ne pas générer plusieurs fois le même plateau. *)
+  let add_occurrence board piece occurrence =
+    let current = Board.get_bitboard board piece in
+    if Bitboard.count_ones current <> occurrence - 1 then []
+    else
+      List.filter
+        (fun next_board ->
+          if occurrence = 1 then true
+          else
+            let added =
+              Int64.logand (Board.get_bitboard next_board piece)
+                (Int64.lognot current)
+            in
+            all_squares_before current (Bitboard.get_lsb added))
+        (Board.add_piece board piece)
+  in
+  let rec generate_all_positions acc added_pieces = function
     | [] ->
         List.filter
           (fun b ->
@@ -13,20 +44,22 @@ let generate_mates pieces =
             && Move_generation.generate_legal_moves b = [])
           acc
     | h :: t ->
+        let occurrence = count_occurrences h added_pieces + 1 in
         generate_all_positions
           (List.concat_map
              (fun b ->
                let positions =
                  List.filter
                    (fun bo -> Transformations.is_normalized bo pieces)
-                   (Board.add_piece b h)
+                   (add_occurrence b h occurrence)
                in
                if fst h = K then positions else b :: positions)
              acc)
-          t
+          (h :: added_pieces) t
   in
   generate_all_positions
     [ Board.empty_board Board.Black ]
+    []
     ((Board.K, Board.White) :: (Board.K, Board.Black) :: pieces)
 
 (* Ajoute la position si elle n'est pas deja présente *)

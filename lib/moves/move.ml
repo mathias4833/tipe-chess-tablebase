@@ -36,21 +36,39 @@ let rec add_moves_to_list p n bitboard acc =
     @param pieces La liste des pièces sur l'échiquier.
     @param bitboard Le bitboard représentant les positions possibles de départ du coup.
     @return La liste mise à jour avec les nouvelles annulations de coups possibles. *)
-let rec add_unmoves_to_list p n acc board pieces = function
-  | 0L -> acc
-  | b ->
-      let from = Bitboard.get_lsb b in
-      let moves =
-        List.filter_map
-          (fun x ->
-            if Board.get_bitboard board x = 0L then
-              Some (Board.Chessmove (p, from, n, Some x))
-            else None)
-          pieces
-      in
-      add_unmoves_to_list p n
-        (Board.Chessmove (p, from, n, None) :: (moves @ acc))
-        board pieces (Bitboard.pop_lsb b)
+let add_unmoves_to_list p n acc (board : Board.chessboard) pieces bitboard =
+  let expected_count piece =
+    List.fold_left
+      (fun count candidate -> if candidate = piece then count + 1 else count)
+      0 pieces
+  in
+  (* Une pièce peut être restaurée s'il en manque une occurrence sur le plateau. *)
+  let restorable_pieces =
+    let rec aux acc = function
+      | [] -> acc
+      | h :: t
+        when snd h <> board.color
+             && Bitboard.count_ones (Board.get_bitboard board h)
+                < expected_count h ->
+          aux (h :: acc) t
+      | _ :: t -> aux acc t
+    in
+    aux [] (List.sort_uniq compare pieces)
+  in
+  let rec aux acc = function
+    | 0L -> acc
+    | b ->
+        let from = Bitboard.get_lsb b in
+        let moves =
+          List.map
+            (fun piece -> Board.Chessmove (p, from, n, Some piece))
+            restorable_pieces
+        in
+        aux
+          (Board.Chessmove (p, from, n, None) :: (moves @ acc))
+          (Bitboard.pop_lsb b)
+  in
+  aux acc bitboard
 
 (** [play_move chessboard move] execute d'un coup sur le plateau d'échecs.
     @param chessboard Le plateau d'échecs actuel.

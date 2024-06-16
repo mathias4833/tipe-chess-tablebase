@@ -109,16 +109,17 @@ let kings_couple_of_index n = (snd kings_lookup_table).(n)
     @param pieces La liste des pièces présentes sur le plateau.
     @return Un indice unique représentant la configuration du plateau, entre 0 et 462*64^(pieces)*2 *)
 let board_to_number (board : Board.chessboard) pieces =
-  let rec aux acc king_square = function
+  let rec add_piece_positions acc king_square = function
     | [] -> (2 * acc) + color_to_number board.color
-    | h :: t ->
-        let b = Board.get_bitboard board h in
-        let n = if b = 0L then king_square else Bitboard.get_lsb b in
-        aux ((acc * 64) + n) king_square t
+    | None :: t -> add_piece_positions ((acc * 64) + king_square) king_square t
+    | Some n :: t -> add_piece_positions ((acc * 64) + n) king_square t
   in
   let n = Bitboard.get_lsb (Board.get_bitboard board (Board.K, Board.White)) in
   let m = Bitboard.get_lsb (Board.get_bitboard board (Board.K, Board.Black)) in
-  aux (kings_index_of_couple n m) n pieces
+  add_piece_positions
+    (kings_index_of_couple n m)
+    n
+    (Board.get_piece_positions board pieces)
 
 (** [number_to_board num pieces] convertit un indice en une configuration de plateau.
     @param num L'indice représentant la configuration du plateau.
@@ -132,7 +133,7 @@ let number_to_board num pieces =
         let r = num mod 64 in
         if r = king_square then add_pieces acc q king_square t
         else
-          let b = Bitboard.set_nth 0L r in
+          let b = Bitboard.set_nth (Board.get_bitboard acc h) r in
           add_pieces (Board.set_bitboard acc b h) q king_square t
   in
   let color = number_to_color (num mod 2) in

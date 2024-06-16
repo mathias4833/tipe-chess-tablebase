@@ -34,23 +34,27 @@ let flip_horizontal (i, j) = (7 - i, j)
 let flip_diagonal (i, j) = (j, i)
 let flip_antidiagonal (i, j) = (7 - j, 7 - i)
 
+(** [position_key board pieces] associe une liste d'indices aux pièces d'un plateau.
+    Les pièces absentes sont associées à l'indice [-1]. *)
+let position_key board pieces =
+  List.map
+    (function Some square -> square | None -> -1)
+    (Board.get_piece_positions board pieces)
+
 (* Verifie si l'echiquier est normalise *)
 let is_normalized (board : Board.chessboard)
     (pieces : Board.colored_chesspiece list) =
-  let get_coord b p =
-    let n = Bitboard.get_lsb (Board.get_bitboard b p) in
-    Bitboard.coord_of_index n
-  in
-  let rec aux = function
-    | [] -> true
-    | h :: t ->
-        let i, j = get_coord board h in
-        if i = j then aux t else i < j
-  in
-  let i, j = get_coord board (Board.K, Board.White) in
+  let white_king = Board.get_bitboard board (Board.K, Board.White) in
+  let i, j = Bitboard.coord_of_index (Bitboard.get_lsb white_king) in
   if j > 3 || i > 3 then false
-  else if i = j then aux ((Board.K, Board.Black) :: pieces)
-  else i < j
+  else if i <> j then i < j
+  else
+    (* Si les deux rois sont sur l'axe de symétrie, les autres pièces
+       permettent de choisir entre le plateau et son symétrique. *)
+    let compared_pieces = (Board.K, Board.Black) :: pieces in
+    let flipped = transform_board flip_diagonal board in
+    position_key board compared_pieces
+    <= position_key flipped compared_pieces
 
 (* Tourne l'echiquier pour avoir le roi dans le triangle en bas a gauche de l'echiquier *)
 let rec normalize_board (board : Board.chessboard)

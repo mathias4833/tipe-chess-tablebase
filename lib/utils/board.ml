@@ -128,6 +128,33 @@ let get_bitboard board = function
   | Q, Black -> board.bqueen
   | K, Black -> board.bking
 
+(** [get_piece_positions board pieces] retourne la position de chaque occurrence des pièces données.
+    Les occurrences identiques sont associées aux bits par ordre croissant.
+    @param board Le plateau d'échecs.
+    @param pieces La liste des pièces dont on cherche les positions.
+    @return La liste des positions, avec [None] pour chaque pièce absente. *)
+let get_piece_positions board pieces =
+  let rec aux remaining acc = function
+    | [] -> List.rev acc
+    | piece :: tail ->
+        let bitboard =
+          match List.assoc_opt piece remaining with
+          | Some bitboard -> bitboard
+          | None -> get_bitboard board piece
+        in
+        let position, next_bitboard =
+          if bitboard = 0L then (None, 0L)
+          else
+            ( Some (Bitboard.get_lsb bitboard),
+              Bitboard.pop_lsb bitboard )
+        in
+        let remaining =
+          (piece, next_bitboard) :: List.remove_assoc piece remaining
+        in
+        aux remaining (position :: acc) tail
+  in
+  aux [] [] pieces
+
 (** [get_ally_bitboard board piece] récupère le bitboard des pièces alliées du type spécifié sur le plateau donné.
     @param board Le plateau de jeu.
     @param piece Le type de pièce (P, B, N, R, Q, K).
