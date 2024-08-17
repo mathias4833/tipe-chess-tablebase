@@ -34,3 +34,6 @@ replit.nix
 
 # Tablebases
 *.table
+
+# Generated visualization
+out.png

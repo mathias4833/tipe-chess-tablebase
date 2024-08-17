@@ -18,7 +18,9 @@
  (depends
   ocaml
   dune
-  unix)
+  unix
+  bimage
+  bimage-unix)
  (tags
   (chess ocaml bitboards tablebases retrograde-analysis tipe)))
 
