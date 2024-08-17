@@ -4,23 +4,22 @@
 
 (generate_opam_files true)
 
-(source
- (github username/reponame))
+(authors "Mathias Anseaume")
 
-(authors "Author Name")
+(maintainers "Mathias Anseaume")
 
-(maintainers "Maintainer Name")
-
-(license LICENSE)
-
-(documentation https://url/to/documentation)
+(license GPL-3.0-only)
 
 (package
  (name chess_engine)
- (synopsis "A short synopsis")
- (description "A longer description")
- (depends ocaml dune)
+ (synopsis "OCaml chess checkmate solver and endgame tablebase generator")
+ (description
+  "Project developed for a TIPE on legal move generation, mate-in-N search, and retrograde analysis for chess endgames.")
+ (depends
+  ocaml
+  dune
+  unix)
  (tags
-  (topics "to describe" your project)))
+  (chess ocaml bitboards tablebases retrograde-analysis tipe)))
 
 ; See the complete stanza docs at https://dune.readthedocs.io/en/stable/dune-files.html#dune-project
