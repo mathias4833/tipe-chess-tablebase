@@ -10,7 +10,6 @@ tags: ["chess" "ocaml" "bitboards" "tablebases" "retrograde-analysis" "tipe"]
 depends: [
   "ocaml"
   "dune" {>= "3.6"}
-  "unix"
   "bimage"
   "bimage-unix"
   "odoc" {with-doc}

@@ -18,7 +18,6 @@
  (depends
   ocaml
   dune
-  unix
   bimage
   bimage-unix)
  (tags
